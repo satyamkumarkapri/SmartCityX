@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Infrastructure & Network | SmartCityX', 'City infrastructure overview')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('infrastructure')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Infrastructure Network', 'Monitor and manage city-wide infrastructure nodes and connections')}"></div>
+    <div class="page-content">
+      
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div class="d-flex gap-4">
+          <a href="#" class="text-decoration-none" style="font-weight:600; color:var(--accent-cyan); border-bottom:2px solid var(--accent-cyan); padding-bottom:12px; margin-bottom:-17px;">Nodes Overview</a>
+          <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Connections</a>
+          <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Capacity</a>
+        </div>
+        <button class="btn btn-primary-smart"><i class="bi bi-plus-lg"></i> Add Node</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Main Map Area (Mock for infrastructure) -->
+        <div class="card-solid p-0 overflow-hidden" style="display:flex; flex-direction:column; grid-column: span 2;">
+          <div style="flex:1; min-height: 400px; background: var(--bg-main); position: relative;">
+            <div id="infrastructureMap" style="width:100%; height:100%; z-index:1;"></div>
+            
+            <div style="position:absolute; bottom: 16px; left: 16px; z-index:1000; background: var(--bg-glass); border: 1px solid var(--border-subtle); padding: 12px; border-radius: 8px; box-shadow: var(--shadow-card); backdrop-filter: blur(10px);">
+              <div style="font-size:12px; font-weight:600; margin-bottom:8px; color:var(--text-primary);">Node Status</div>
+              <div class="d-flex align-items-center gap-3">
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text-muted);"><span style="width:12px; height:12px; background:#16a34a; border-radius:50%;"></span> Active</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text-muted);"><span style="width:12px; height:12px; background:#f59e0b; border-radius:50%;"></span> Maintenance</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text-muted);"><span style="width:12px; height:12px; background:#dc2626; border-radius:50%;"></span> Offline</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-solid mt-4">
+        <div class="card-header">
+          <h3 class="card-title">Infrastructure Nodes</h3>
+        </div>
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th>Node ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Zone</th>
+                <th>Coordinates</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="node : ${nodes}">
+                <td style="font-family:'Fira Code', monospace; color:var(--text-muted); font-size:12px;" th:text="${node.nodeId}"></td>
+                <td style="font-weight:600; color:var(--text-primary);" th:text="${node.name}"></td>
+                <td><span class="badge" style="background:rgba(25, 217, 229, 0.1); color:var(--accent-cyan); border:1px solid var(--accent-cyan);" th:text="${node.nodeType}"></span></td>
+                <td th:text="${node.zone}"></td>
+                <td style="font-family:'Fira Code', monospace; font-size:12px; color:var(--text-muted);" th:text="${node.latitude + ', ' + node.longitude}"></td>
+                <td>
+                  <span class="badge" th:classappend="${node.status == 'ACTIVE'} ? 'badge-success' : (${node.status == 'MAINTENANCE'} ? 'badge-warning' : 'badge-danger')" th:text="${node.status}"></span>
+                </td>
+                <td>
+                  <button class="btn btn-sm" style="background:rgba(255,255,255,0.05); color:var(--text-muted); border:1px solid var(--border-subtle);"><i class="bi bi-pencil"></i></button>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(nodes)}">
+                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-building" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No infrastructure nodes registered.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('infrastructureMap').setView([17.3850, 78.4867], 13);
+    
+    // Esri World Street Map for a cleaner, premium look
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+      maxZoom: 18
+    }).addTo(map);
+
+    var nodes = /*[[${nodes}]]*/ [];
+    var edges = /*[[${edges}]]*/ [];
+
+    var nodeMap = {};
+
+    var activeNodeIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: '<div style="background-color:#16a34a;width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 0 10px rgba(22,163,74,0.5);"></div>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+    
+    var maintenanceNodeIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: '<div style="background-color:#f59e0b;width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 0 10px rgba(245,158,11,0.5);"></div>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    var dangerNodeIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: '<div style="background-color:#dc2626;width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 0 10px rgba(220,38,38,0.5);"></div>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    nodes.forEach(function(node) {
+      if (node.latitude && node.longitude) {
+        nodeMap[node.nodeId] = [node.latitude, node.longitude];
+        var icon = activeNodeIcon;
+        if (node.status === 'MAINTENANCE') icon = maintenanceNodeIcon;
+        else if (node.status === 'OFFLINE') icon = dangerNodeIcon;
+
+        L.marker([node.latitude, node.longitude], {icon: icon})
+         .addTo(map)
+         .bindPopup('<b>' + node.name + '</b><br/>' + node.nodeType + ' - ' + node.status);
+      }
+    });
+
+    edges.forEach(function(edge) {
+      var source = nodeMap[edge.sourceNodeId];
+      var target = nodeMap[edge.targetNodeId];
+      if (source && target) {
+        L.polyline([source, target], {
+            color: '#0ea5e9', 
+            weight: 3, 
+            opacity: 0.7, 
+            dashArray: '5, 10'
+        }).addTo(map);
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('IoT Sensors | SmartCityX', 'Sensor observations')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('sensors')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('IoT & Sensor Observations', 'Real-time infrastructure health and usage metrics')}"></div>
+    <div class="page-content">
+
+      <div th:if="${success}" class="alert alert-success mb-4 d-flex align-items-center gap-2" style="background:#dcfce7; border:1px solid #16a34a; color:#16a34a; padding:12px; border-radius:8px;">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+      </div>
+
+      <!-- KPIs -->
+      <div class="stat-grid mb-4">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-wifi"></i></div>
+          <div class="stat-info">
+            <div class="stat-value">1,432</div>
+            <div class="stat-label">Online Sensors</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" style="background:#ccfbf1; color:#0d9488;"><i class="bi bi-battery-half"></i></div>
+          <div class="stat-info">
+            <div class="stat-value">84%</div>
+            <div class="stat-label">Avg Battery</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="bi bi-exclamation-triangle"></i></div>
+          <div class="stat-info">
+            <div class="stat-value">18</div>
+            <div class="stat-label text-orange">Active Alerts</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="bi bi-wifi-off"></i></div>
+          <div class="stat-info">
+            <div class="stat-value">7</div>
+            <div class="stat-label text-red">Offline</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-solid">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+          <div class="d-flex gap-4">
+            <a href="#" class="text-decoration-none" style="font-weight:600; color:#0ea5e9; border-bottom:2px solid #0ea5e9; padding-bottom:12px; margin-bottom:-17px;">Map View</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">List View</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Live Feed</a>
+          </div>
+          <a href="/sensors/new" class="btn" style="background:#14b8a6; color:white;"><i class="bi bi-plus"></i> Add Sensor</a>
+        </div>
+
+        <div style="height: 350px; background: #e2e8f0; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 24px;">
+          <!-- Map Container -->
+          <div id="sensorMap" style="width:100%; height:100%; z-index:1;"></div>
+          
+          <!-- Filter overlay on map -->
+          <div style="position:absolute; top: 16px; left: 16px; background: white; padding: 12px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="font-size:12px; font-weight:600; margin-bottom:8px;">Filter by Type</div>
+            <div class="d-flex flex-column gap-2">
+              <label style="font-size:12px; display:flex; gap:8px;"><input type="checkbox" checked> <i class="bi bi-droplet-fill text-primary"></i> Water Level</label>
+              <label style="font-size:12px; display:flex; gap:8px;"><input type="checkbox" checked> <i class="bi bi-stoplights-fill text-danger"></i> Traffic</label>
+              <label style="font-size:12px; display:flex; gap:8px;"><input type="checkbox" checked> <i class="bi bi-cloud-haze2-fill text-success"></i> Air Quality</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="card-title">Recent Observations</h3>
+          <div class="position-relative" style="max-width:250px;">
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+            <input type="text" class="form-control ps-4" placeholder="Search sensor ID..." style="font-size:13px; border-color:#e2e8f0;"/>
+          </div>
+        </div>
+
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Sensor ID</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Location</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Type</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Status</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Last Reading</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="s : ${sensors}">
+                <td>
+                  <div style="font-family:monospace; font-size:13px; font-weight:600; color:#0f172a;" th:text="${s.sensorId}"></div>
+                </td>
+                <td style="color:#475569; font-size:13px;" th:text="${s.zone}"></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <i th:if="${s.sensorType == 'Traffic'}" class="bi bi-stoplights-fill text-danger"></i>
+                    <i th:if="${s.sensorType == 'Water'}" class="bi bi-droplet-fill text-primary"></i>
+                    <i th:if="${s.sensorType == 'Energy'}" class="bi bi-lightning-fill text-warning"></i>
+                    <i th:if="${s.sensorType == 'Air Quality'}" class="bi bi-cloud-haze2-fill text-success"></i>
+                    <span style="font-size:13px; font-weight:500;" th:text="${s.sensorType}"></span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge-status badge-online" style="font-size:11px;">
+                    <span style="width:6px; height:6px; background:currentColor; border-radius:50%; display:inline-block; margin-right:4px;"></span> Online
+                  </span>
+                </td>
+                <td>
+                  <div style="font-size:14px; font-weight:600; color:#0f172a;">
+                    <span th:text="${s.value}"></span> <span style="font-size:11px; color:#64748b;" th:text="${s.unit}"></span>
+                  </div>
+                  <div style="font-size:11px; color:#94a3b8;" th:text="${s.timestamp != null ? #temporals.format(s.timestamp, 'dd MMM, HH:mm') : 'Just now'}"></div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(sensors)}">
+                <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-broadcast" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No sensor observations
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('sensorMap').setView([17.3850, 78.4867], 13);
+    
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri',
+      maxZoom: 18
+    }).addTo(map);
+
+    var createIcon = function(color) {
+      return L.divIcon({
+        className: 'custom-div-icon',
+        html: '<div style="background-color:' + color + ';width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+    };
+
+    L.marker([17.3850, 78.4867], {icon: createIcon('#3b82f6')}).addTo(map).bindPopup('Water Level Sensor: Normal');
+    L.marker([17.3950, 78.4767], {icon: createIcon('#dc2626')}).addTo(map).bindPopup('Traffic Sensor: High');
+    L.marker([17.3750, 78.4967], {icon: createIcon('#16a34a')}).addTo(map).bindPopup('Air Quality: Good');
+  });
+</script>
+</body>
+</html>

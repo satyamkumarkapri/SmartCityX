@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Parallel Algorithms | SmartCityX', 'M6 Parallel')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('parallel')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M6 – Parallel Algorithms', 'Blelloch Scan · Parallel Reduce · Brent\'s Theorem')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showPTab('scan')">Blelloch Scan</button>
+        <button class="module-tab" onclick="showPTab('reduce')">Parallel Reduce</button>
+        <button class="module-tab" onclick="showPTab('brent')">Brent's Theorem</button>
+      </div>
+
+      <!-- Blelloch Scan -->
+      <div id="tab-scan">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-lightning-charge"></i> Blelloch Prefix Scan</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Parallel prefix-sum algorithm in O(n) work and O(log n) span.
+            Used in SmartCityX for parallel sensor data aggregation and cumulative resource tracking.
+          </p>
+          <div class="col-md-8">
+            <label class="form-label-smart">Input Array (comma-separated, max 16 elements)</label>
+            <input type="text" id="scan-arr" class="form-control-smart" value="3, 1, 7, 0, 4, 1, 6, 3"/>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runScan()"><i class="bi bi-play-fill"></i> Run Blelloch Scan</button>
+          </div>
+        </div>
+        <div id="scan-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Total Work W</div><div class="result-value" id="scan-work">-</div></div>
+            <div><div class="result-label">Span (depth) D</div><div class="result-value" id="scan-span">-</div></div>
+            <div><div class="result-label">Parallelism W/D</div><div class="result-value" id="scan-para">-</div></div>
+          </div>
+          <div class="result-label mb-2">Input Array</div>
+          <div class="array-display" id="scan-input"></div>
+          <div class="result-label mt-3 mb-2">Prefix Sums (exclusive scan)</div>
+          <div class="array-display" id="scan-output"></div>
+          <div style="margin-top:16px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:13px;color:var(--text-secondary);">
+            <strong style="color:var(--accent-cyan);">How it works:</strong>
+            Up-sweep (reduce) phase builds partial sums in the tree.
+            Down-sweep distributes prefix values. Each level can be done in parallel, giving O(log n) span.
+          </div>
+        </div>
+      </div>
+
+      <!-- Parallel Reduce -->
+      <div id="tab-reduce" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-lightning-charge-fill"></i> Parallel Reduce</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Sum an array using a tree-based parallel reduction.
+            W = O(n) work, D = O(log n) span. Ideal for combining sensor readings across the city network.
+          </p>
+          <div class="col-md-8">
+            <label class="form-label-smart">Input Array (comma-separated)</label>
+            <input type="text" id="reduce-arr" class="form-control-smart" value="4, 8, 6, 1, 3, 9, 5, 2"/>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runReduce()"><i class="bi bi-play-fill"></i> Run Parallel Reduce</button>
+          </div>
+        </div>
+        <div id="reduce-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Total Sum</div><div class="result-value" id="reduce-total">-</div></div>
+            <div><div class="result-label">Work W</div><div class="result-value" id="reduce-work">-</div></div>
+            <div><div class="result-label">Span D</div><div class="result-value" id="reduce-span">-</div></div>
+          </div>
+          <div class="result-label mb-2">Reduction Levels (tree bottom-up)</div>
+          <div id="reduce-levels"></div>
+        </div>
+      </div>
+
+      <!-- Brent's Theorem -->
+      <div id="tab-brent" style="display:none;">
+        <div class="card-glass">
+          <div class="section-title mb-3"><i class="bi bi-cpu"></i> Brent's Theorem</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">
+            Brent's theorem bounds the time to run a PRAM computation with p processors:
+          </p>
+
+          <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:20px;font-size:16px;text-align:center;color:var(--accent-cyan);font-family:monospace;margin-bottom:20px;">
+            T_p ≤ (W – D) / p + D
+          </div>
+
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Where: W = total work, D = span (critical path), p = number of processors.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label-smart">Total Work (W)</label>
+              <input type="number" id="brent-w" class="form-control-smart" value="1000"/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Span (D)</label>
+              <input type="number" id="brent-d" class="form-control-smart" value="10"/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Processors (p)</label>
+              <input type="number" id="brent-p" class="form-control-smart" value="8"/>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="calcBrent()"><i class="bi bi-calculator"></i> Calculate Bound</button>
+          </div>
+
+          <div id="brent-result" class="algo-result mt-4">
+            <div class="grid-3 mb-4">
+              <div><div class="result-label">Tp Bound (p processors)</div><div class="result-value" id="brent-tp">-</div></div>
+              <div><div class="result-label">Ideal (W/p)</div><div class="result-value" id="brent-ideal">-</div></div>
+              <div><div class="result-label">Parallelism (W/D)</div><div class="result-value" id="brent-parallelism">-</div></div>
+            </div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;" id="brent-analysis"></div>
+
+            <div class="result-label mt-3 mb-2">Speedup vs Processors</div>
+            <canvas id="brent-chart" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showPTab(tab) {
+  ['scan','reduce','brent'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.toggle('active', (['scan','reduce','brent'][i]) === tab);
+  });
+}
+
+async function runScan() {
+  const arrStr = document.getElementById('scan-arr').value;
+  const array = arrStr.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n)).slice(0,16);
+  const res = await fetch('/api/algorithms/blelloch-scan', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({array})
+  });
+  const data = await res.json();
+  document.getElementById('scan-work').textContent = data.totalWork;
+  document.getElementById('scan-span').textContent = data.span;
+  const parallelism = data.span > 0 ? Math.round(data.totalWork / data.span) : '∞';
+  document.getElementById('scan-para').textContent = parallelism;
+  document.getElementById('scan-input').innerHTML = array.map(n=>`<span class="array-cell">${n}</span>`).join('');
+  document.getElementById('scan-output').innerHTML = data.prefixSums.map(n=>`<span class="array-cell highlight">${n}</span>`).join('');
+  document.getElementById('scan-result').classList.add('show');
+}
+
+async function runReduce() {
+  const arrStr = document.getElementById('reduce-arr').value;
+  const array = arrStr.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n));
+  const res = await fetch('/api/algorithms/parallel-reduce', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({array})
+  });
+  const data = await res.json();
+  document.getElementById('reduce-total').textContent = data.total;
+  document.getElementById('reduce-work').textContent = data.work;
+  document.getElementById('reduce-span').textContent = data.span;
+
+  let levelsHtml = '';
+  (data.levels || []).forEach((level, i) => {
+    levelsHtml += `<div style="margin-bottom:8px;">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Level ${i+1}</div>
+      <div class="array-display">${level.map(v=>`<span class="array-cell">${v}</span>`).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('reduce-levels').innerHTML = levelsHtml;
+  document.getElementById('reduce-result').classList.add('show');
+}
+
+let brentChart = null;
+
+function calcBrent() {
+  const W = parseInt(document.getElementById('brent-w').value);
+  const D = parseInt(document.getElementById('brent-d').value);
+  const p = parseInt(document.getElementById('brent-p').value);
+
+  const tp = Math.ceil((W - D) / p + D);
+  const ideal = Math.ceil(W / p);
+  const parallelism = (W / D).toFixed(1);
+
+  document.getElementById('brent-tp').textContent = tp;
+  document.getElementById('brent-ideal').textContent = ideal;
+  document.getElementById('brent-parallelism').textContent = parallelism;
+
+  const analysis = W / D < p
+    ? `With parallelism W/D = ${parallelism} < p = ${p}, adding more processors beyond W/D provides no speedup.`
+    : `With p = ${p} processors and parallelism W/D = ${parallelism}, we are below the parallelism limit. Speedup = ${(W/tp).toFixed(2)}×.`;
+  document.getElementById('brent-analysis').innerHTML = analysis;
+
+  // Chart
+  const procs = [1, 2, 4, 8, 16, 32, 64, 128];
+  const times = procs.map(pi => Math.ceil((W - D) / pi + D));
+  const speedups = times.map(t => (times[0] / t).toFixed(2));
+
+  if (brentChart) brentChart.destroy();
+  const ctx = document.getElementById('brent-chart').getContext('2d');
+  brentChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: procs.map(p => `p=${p}`),
+      datasets: [{
+        label: 'Speedup',
+        data: speedups,
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,0.1)',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#0f1629', titleColor: '#f1f5f9', bodyColor: '#94a3b8' }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  document.getElementById('brent-result').classList.add('show');
+}
+</script>
+</body>
+</html>

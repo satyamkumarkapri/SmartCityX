@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('View Document | SmartCityX', 'Document details')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('documents')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Document View', 'City Document Details')}"></div>
+    <div class="page-content" style="max-width:820px;">
+      <div class="card-glass">
+        <div class="section-header mb-4">
+          <div style="flex:1;">
+            <div style="font-size:22px;font-weight:800;color:var(--text-primary);" th:text="${document.title}">Title</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+              <span class="mono" th:text="${document.documentType}"></span> &nbsp;·&nbsp;
+              <span th:text="${document.department}"></span> &nbsp;·&nbsp;
+              <span th:text="${document.createdAt != null ? #temporals.format(document.createdAt, 'dd MMM yyyy') : '-'}"></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a th:href="@{/documents/{id}/edit(id=${document.id})}" class="btn-edit-smart"><i class="bi bi-pencil"></i> Edit</a>
+            <a href="/documents" class="btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:24px;font-size:14px;line-height:1.8;color:var(--text-secondary);" th:text="${document.content}">Content</div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

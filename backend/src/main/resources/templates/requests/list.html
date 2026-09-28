@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Service Requests | SmartCityX', 'Manage requests')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('requests')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Service Requests', 'Citizens can raise and track service requests easily')}"></div>
+    <div class="page-content">
+
+      <!-- Flash -->
+      <div th:if="${success}" class="alert alert-success mb-4 d-flex align-items-center gap-2" style="background:#dcfce7; border:1px solid #16a34a; color:#16a34a; padding:12px; border-radius:8px;">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+      </div>
+
+      <div class="card-solid">
+        <!-- Top Toolbar with Tabs and New Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+          <div class="d-flex gap-4">
+            <a href="/requests" class="text-decoration-none" style="font-weight:600; color:#0ea5e9; border-bottom:2px solid #0ea5e9; padding-bottom:12px; margin-bottom:-17px;">All Requests</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">My Requests</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Create Request</a>
+          </div>
+          <a href="/requests/new" class="btn" style="background:#14b8a6; color:white;"><i class="bi bi-plus"></i> New Request</a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded">
+          <form method="get" action="/requests" class="d-flex gap-3 align-items-center flex-grow-1 me-4">
+            <div class="position-relative flex-grow-1" style="max-width:300px;">
+              <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+              <input type="text" name="search" class="form-control ps-4" placeholder="Search by ID, keyword or category..." th:value="${search}" style="font-size:13px; border-color:#e2e8f0;"/>
+            </div>
+            
+            <select name="category" class="form-select" style="max-width:180px; font-size:13px; border-color:#e2e8f0;">
+              <option value="">All Categories</option>
+              <option value="Street Light">Street Light</option>
+              <option value="Water Supply">Water Supply</option>
+              <option value="Waste Management">Waste Management</option>
+              <option value="Road Maintenance">Road Maintenance</option>
+            </select>
+            
+            <select name="status" class="form-select" style="max-width:140px; font-size:13px; border-color:#e2e8f0;">
+              <option value="">Status</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Closed</option>
+            </select>
+          </form>
+          <div class="text-muted" style="font-size:13px;">Total <span th:text="${requests.size()}">0</span></div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">ID</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Category</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Description</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Status</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="req : ${requests}">
+                <td style="color:#64748b; font-size:13px; font-family:monospace;" th:text="'#SR2025'+${req.id}"></td>
+                <td style="color:#0f172a; font-weight:600; font-size:14px;" th:text="${req.category}"></td>
+                <td style="color:#64748b; font-size:13px; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" th:text="${req.title}"></td>
+                <td>
+                  <span th:if="${req.status.name() == 'OPEN'}" style="color:#0284c7; border:1px solid #e0f2fe; padding:4px 10px; border-radius:50px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                    <span style="width:6px; height:6px; background:#0284c7; border-radius:50%;"></span> Open
+                  </span>
+                  <span th:if="${req.status.name() == 'IN_PROGRESS'}" style="color:#ea580c; border:1px solid #ffedd5; padding:4px 10px; border-radius:50px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                    <span style="width:6px; height:6px; background:#ea580c; border-radius:50%;"></span> In Progress
+                  </span>
+                  <span th:if="${req.status.name() == 'RESOLVED'}" style="color:#16a34a; border:1px solid #dcfce7; padding:4px 10px; border-radius:50px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                    <span style="width:6px; height:6px; background:#16a34a; border-radius:50%;"></span> Closed
+                  </span>
+                </td>
+                <td style="color:#64748b; font-size:13px;" th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'dd MMM') : '-'}"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(requests)}">
+                <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No service requests found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

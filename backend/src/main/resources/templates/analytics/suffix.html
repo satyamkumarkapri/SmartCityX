@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Suffix Structures | SmartCityX', 'M2 Suffix algorithms')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('suffix')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M2 – Suffix Structures', 'Suffix Array · Kasai LCP · Suffix Automaton')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showSufTab('sa')">Suffix Array + LCP</button>
+        <button class="module-tab" onclick="showSufTab('sam')">Suffix Automaton (SAM)</button>
+      </div>
+
+      <!-- Suffix Array Tab -->
+      <div id="tab-sa">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-diagram-3"></i> Suffix Array + Kasai LCP</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Suffix Array is a sorted array of all suffixes. Built in O(n log²n).
+            Kasai's algorithm computes the LCP array in O(n).
+            Used to index city documents for efficient substring search.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Text (max 200 chars)</label>
+              <textarea id="sa-text" class="form-control-smart" rows="3" maxlength="200">banana</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Search Pattern (optional)</label>
+              <input type="text" id="sa-pattern" class="form-control-smart" value="ana" placeholder="Pattern to search"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runSA()"><i class="bi bi-play-fill"></i> Build Suffix Array</button>
+          </div>
+        </div>
+        <div id="sa-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Matches Found</div><div class="result-value" id="sa-matches">-</div></div>
+            <div><div class="result-label">Execution Time</div><div class="result-value" id="sa-time">-</div></div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="result-label mb-2">Suffix Array (SA) + LCP – first 20 suffixes</div>
+              <div style="background:rgba(0,0,0,0.3);border-radius:8px;overflow:auto;max-height:320px;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead>
+                    <tr>
+                      <th style="padding:8px 12px;background:rgba(255,255,255,0.05);color:var(--text-muted);text-align:left;font-size:10px;">Rank</th>
+                      <th style="padding:8px 12px;background:rgba(255,255,255,0.05);color:var(--text-muted);text-align:left;font-size:10px;">SA[i]</th>
+                      <th style="padding:8px 12px;background:rgba(255,255,255,0.05);color:var(--text-muted);text-align:left;font-size:10px;">LCP[i]</th>
+                      <th style="padding:8px 12px;background:rgba(255,255,255,0.05);color:var(--text-muted);text-align:left;font-size:10px;">Suffix</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sa-table"></tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div class="result-label mb-2">Match Positions</div>
+              <div class="array-display" id="sa-positions"></div>
+              <div class="result-label mt-3 mb-2">Matching Suffixes</div>
+              <div id="sa-matching-suffixes"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAM Tab -->
+      <div id="tab-sam" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-diagram-3"></i> Suffix Automaton (SAM)</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            The smallest DFA that accepts all suffixes of a string. Constructed in O(n) time and space.
+            Every state represents a set of substrings (an equivalence class).
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Text</label>
+              <textarea id="sam-text" class="form-control-smart" rows="3" maxlength="200">abcbc</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Search Pattern</label>
+              <input type="text" id="sam-pattern" class="form-control-smart" value="bc"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runSAM()"><i class="bi bi-play-fill"></i> Build SAM</button>
+          </div>
+        </div>
+        <div id="sam-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">SAM States</div><div class="result-value" id="sam-states">-</div></div>
+            <div><div class="result-label">Pattern Found</div><div class="result-value" id="sam-found" style="font-size:20px;">-</div></div>
+            <div><div class="result-label">Build Time</div><div class="result-value" id="sam-time">-</div></div>
+          </div>
+          <div>
+            <div class="result-label mb-2">Sample Substrings Indexed</div>
+            <div class="array-display" id="sam-substrings"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showSufTab(tab) {
+  document.getElementById('tab-sa').style.display = tab==='sa' ? 'block' : 'none';
+  document.getElementById('tab-sam').style.display = tab==='sam' ? 'block' : 'none';
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.toggle('active', (i===0 && tab==='sa') || (i===1 && tab==='sam'));
+  });
+}
+
+async function runSA() {
+  const text = document.getElementById('sa-text').value;
+  const pattern = document.getElementById('sa-pattern').value;
+  const res = await fetch('/api/algorithms/suffix-array', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, pattern})
+  });
+  const data = await res.json();
+  document.getElementById('sa-matches').textContent = data.matchPositions.length;
+  document.getElementById('sa-time').textContent = data.executionTimeMs + 'ms';
+
+  // Build table
+  const tbody = document.getElementById('sa-table');
+  tbody.innerHTML = '';
+  for (let i = 0; i < data.suffixes.length; i++) {
+    const isMatch = data.matchPositions.includes(data.suffixArray[i]);
+    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border);${isMatch?'background:rgba(16,185,129,0.08);':''}">
+      <td style="padding:6px 12px;color:var(--text-muted);">${i}</td>
+      <td style="padding:6px 12px;color:var(--accent-blue);font-weight:600;">${data.suffixArray[i]}</td>
+      <td style="padding:6px 12px;color:var(--accent-orange);">${data.lcpArray[i]}</td>
+      <td style="padding:6px 12px;color:${isMatch?'var(--accent-green)':'var(--text-secondary)'};font-family:monospace;">${data.suffixes[i]}</td>
+    </tr>`;
+  }
+
+  // Match positions
+  const posEl = document.getElementById('sa-positions');
+  posEl.innerHTML = data.matchPositions.map(p=>`<span class="array-cell highlight">${p}</span>`).join('') || '<span style="color:var(--text-muted)">No matches</span>';
+
+  document.getElementById('sa-result').classList.add('show');
+}
+
+async function runSAM() {
+  const text = document.getElementById('sam-text').value;
+  const pattern = document.getElementById('sam-pattern').value;
+  const res = await fetch('/api/algorithms/suffix-automaton', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, pattern})
+  });
+  const data = await res.json();
+  document.getElementById('sam-states').textContent = data.stateCount;
+  document.getElementById('sam-found').textContent = data.patternFound ? '✅ Yes' : '❌ No';
+  document.getElementById('sam-found').style.color = data.patternFound ? 'var(--accent-green)' : 'var(--accent-red)';
+  document.getElementById('sam-time').textContent = data.executionTimeMs + 'ms';
+
+  const el = document.getElementById('sam-substrings');
+  el.innerHTML = (data.distinctSubstrings || []).map(s=>`<span class="array-cell">${s}</span>`).join('');
+  document.getElementById('sam-result').classList.add('show');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartCityX – Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --deep-navy: #02060c;
+      --navy-blue: #0b1a2f;
+      --smart-teal: #00c7b7;
+      --cyan: #19d9e5;
+      --soft-text: #a0aec0;
+      --white: #ffffff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    
+    body {
+      background: var(--deep-navy);
+      color: var(--white);
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    
+    .split-layout {
+      display: flex;
+      width: 100%;
+    }
+    
+    .auth-image {
+      flex: 1.2;
+      background: url('/images/auth-bg.jpg') center/cover no-repeat;
+      position: relative;
+      display: none;
+    }
+    
+    @media (min-width: 1024px) {
+      .auth-image {
+        display: block;
+      }
+    }
+
+    .auth-image::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(2,6,12,0) 0%, rgba(2,6,12,1) 100%);
+    }
+
+    .image-text {
+      position: absolute;
+      bottom: 60px;
+      left: 60px;
+      z-index: 10;
+      max-width: 500px;
+    }
+
+    .image-text h2 {
+      font-family: 'Outfit';
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--smart-teal), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .image-text p {
+      font-size: 16px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.6;
+    }
+
+    .auth-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+    }
+
+    .back-arrow {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      color: var(--soft-text);
+      font-size: 24px;
+      text-decoration: none;
+      transition: color 0.3s, transform 0.3s;
+      z-index: 20;
+    }
+    .back-arrow:hover {
+      color: var(--cyan);
+      transform: translateX(-4px);
+    }
+    
+    .login-form-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .brand { text-align: left; margin-bottom: 40px; }
+    .brand i { font-size: 42px; color: var(--smart-teal); display: inline-block; margin-bottom: 12px; }
+    .brand h1 { font-family: 'Outfit'; font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+    .brand p { font-size: 13px; color: var(--soft-text); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+    
+    .welcome-text { margin-bottom: 32px; }
+    .welcome-text h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .welcome-text p { font-size: 14px; color: var(--soft-text); }
+
+    .role-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 50px;
+      padding: 4px;
+      margin-bottom: 32px;
+    }
+    .role-tab {
+      flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600;
+      color: var(--soft-text); cursor: pointer; border-radius: 50px; transition: all 0.3s;
+    }
+    .role-tab.active {
+      background: rgba(25, 217, 229, 0.15);
+      color: var(--cyan);
+    }
+
+    .form-group { margin-bottom: 24px; position: relative; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--soft-text); margin-bottom: 10px; }
+    .form-group input {
+      width: 100%; padding: 14px 16px 14px 46px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; color: var(--white);
+      font-size: 15px; outline: none; transition: all 0.3s;
+    }
+    .form-group input:focus {
+      border-color: var(--smart-teal);
+      background: rgba(0, 199, 183, 0.05);
+      box-shadow: 0 0 0 4px rgba(0, 199, 183, 0.1);
+    }
+    .form-group input::placeholder { color: rgba(255, 255, 255, 0.2); }
+    .form-icon { position: absolute; left: 18px; top: 41px; color: var(--smart-teal); font-size: 18px; opacity: 0.8; }
+    
+    .form-action {
+      position: absolute; right: 0; top: 0; font-size: 13px; color: var(--cyan); font-weight: 500; text-decoration: none; transition: color 0.3s;
+    }
+    .form-action:hover { color: var(--white); text-decoration: underline; }
+    
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(135deg, var(--smart-teal) 0%, var(--cyan) 100%);
+      color: var(--deep-navy); padding: 16px; border-radius: 12px;
+      border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 199, 183, 0.3);
+      margin-top: 10px;
+    }
+    .btn-login:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 199, 183, 0.4); }
+    
+    .divider {
+      display: flex; align-items: center; text-align: center; margin: 32px 0; color: var(--soft-text); font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .divider:not(:empty)::before { margin-right: 1em; }
+    .divider:not(:empty)::after { margin-left: 1em; }
+
+    .social-login { display: flex; gap: 16px; margin-bottom: 32px; }
+    .btn-social {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      font-size: 14px; font-weight: 500; color: var(--white); cursor: pointer; transition: all 0.3s;
+    }
+    .btn-social:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    
+    .signup-link { text-align: center; font-size: 14px; color: var(--soft-text); }
+    .signup-link a { color: var(--cyan); font-weight: 600; text-decoration: none; transition: color 0.3s; }
+    .signup-link a:hover { color: var(--white); text-decoration: underline; }
+
+    .alert {
+      font-size: 14px; text-align: center; margin-bottom: 24px; padding: 12px; border-radius: 12px;
+    }
+    .alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; }
+    .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; }
+  </style>
+</head>
+<body>
+
+<div class="split-layout">
+  
+  <div class="auth-image">
+    <div class="image-text">
+      <h2>Smarter Cities.<br>Brighter Tomorrows.</h2>
+      <p>Experience the future of urban management with our premium analytics and infrastructure platform.</p>
+    </div>
+  </div>
+
+  <div class="auth-content">
+    <a href="/" class="back-arrow" title="Back to Home"><i class="bi bi-arrow-left"></i></a>
+    
+    <div class="login-form-container">
+      <div class="brand">
+        <i class="bi bi-buildings-fill"></i>
+        <h1>SmartCityX</h1>
+        <p>Analytics Platform</p>
+      </div>
+
+      <div class="welcome-text">
+        <h2>Welcome Back</h2>
+        <p>Login to access your dashboard</p>
+      </div>
+      
+      <div th:if="${param.registered}" class="alert alert-success">
+        Registration successful! Please login.
+      </div>
+      <div th:if="${param.error}" class="alert alert-error">
+        Invalid credentials.
+      </div>
+      
+      <div class="demo-creds" style="font-size:12px; text-align:center; color:rgba(255,255,255,0.3); margin-bottom:24px;">
+        Demo: admin / admin123
+      </div>
+
+      <div class="role-tabs">
+        <div class="role-tab active">Citizen</div>
+        <div class="role-tab">Staff</div>
+        <div class="role-tab">Admin</div>
+      </div>
+
+      <form method="post" th:action="@{/login}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        
+        <div class="form-group">
+          <label for="username">Email or Username</label>
+          <i class="bi bi-envelope form-icon"></i>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <a href="#" class="form-action">Forgot password?</a>
+          <i class="bi bi-lock form-icon"></i>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required/>
+        </div>
+
+        <button type="submit" class="btn-login">Login Securely</button>
+      </form>
+
+      <div class="divider">or authenticate via</div>
+
+      <div class="social-login">
+        <button class="btn-social">
+          <i class="bi bi-google text-danger"></i> Google
+        </button>
+        <button class="btn-social">
+          <i class="bi bi-microsoft text-info"></i> Microsoft
+        </button>
+      </div>
+
+      <div class="signup-link">
+        Don't have an account? <a href="/signup">Create one now</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.role-tab');
+    
+    const demoCreds = {
+      'Admin': { u: 'admin', p: 'admin123' },
+      'Staff': { u: 'operator', p: 'op2024' },
+      'Citizen': { u: '', p: '' }
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const role = tab.textContent.trim();
+        const creds = demoCreds[role];
+        
+        if (creds) {
+            document.getElementById('username').value = creds.u;
+            document.getElementById('password').value = creds.p;
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

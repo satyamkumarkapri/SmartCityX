@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartCityX – Municipal Analytics</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --deep-navy: #061B33;
+      --navy-blue: #0A2D4F;
+      --smart-teal: #00C7B7;
+      --cyan: #19D9E5;
+      --green: #62D99B;
+      --white: #ffffff;
+      --soft-text: #94a3b8;
+      --glass-bg: rgba(6, 27, 51, 0.45);
+      --glass-border: rgba(25, 217, 229, 0.2);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--deep-navy);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+    a { text-decoration: none; color: inherit; }
+
+    .glass-effect {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+
+    .text-gradient {
+      background: linear-gradient(90deg, var(--smart-teal), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── VIDEO HERO SECTION ────────────────── */
+    .video-hero-wrapper {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .bg-video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .bg-video::-webkit-media-controls,
+    .bg-video::-webkit-media-controls-enclosure,
+    .bg-video::-webkit-media-controls-panel,
+    .bg-video::-webkit-media-controls-start-playback-button,
+    .bg-video::-webkit-media-controls-overlay-play-button {
+      display: none !important;
+      -webkit-appearance: none !important;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background:
+        /* Lighter left panel for text readability */
+        linear-gradient(90deg, rgba(6,27,51,0.85) 0%, rgba(6,27,51,0.4) 45%, transparent 100%),
+        /* Bottom-to-top fade */
+        linear-gradient(0deg, rgba(6,27,51,1) 0%, rgba(6,27,51,0) 25%);
+      z-index: 1;
+    }
+
+    /* ─── HEADER ───────────────────────────── */
+    .header-wrapper {
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      z-index: 1000;
+      padding: 20px 32px;
+      transition: padding 0.3s ease;
+    }
+
+    .header-wrapper.scrolled { padding: 10px 32px; }
+
+    .main-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 28px;
+      border-radius: 50px;
+      background: rgba(6, 27, 51, 0.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(25, 217, 229, 0.25);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .header-wrapper.scrolled .main-nav {
+      background: rgba(6, 27, 51, 0.85);
+      border-color: rgba(25, 217, 229, 0.4);
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-brand i { font-size: 26px; color: var(--smart-teal); }
+    .nav-brand-text { display: flex; flex-direction: column; }
+    .nav-brand-name { font-family: 'Outfit'; font-size: 20px; font-weight: 800; line-height: 1; }
+    .nav-brand-sub { font-size: 8px; color: var(--soft-text); letter-spacing: 0.5px; }
+
+    .nav-links {
+      display: flex; gap: 24px; list-style: none;
+    }
+    .nav-links a {
+      color: var(--white); font-size: 13px; font-weight: 500;
+      transition: color 0.3s; display: flex; align-items: center; gap: 4px;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-links .dd-icon { font-size: 9px; }
+
+    .nav-links .nav-item { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: -10px;
+      background: rgba(6, 27, 51, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 8px 0;
+      min-width: 220px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(15px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+    .nav-item.dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .dropdown-menu a {
+      display: flex !important;
+      padding: 10px 20px;
+      color: var(--soft-text) !important;
+      font-size: 13px !important;
+      transition: all 0.2s;
+    }
+    .dropdown-menu a:hover {
+      background: rgba(25, 217, 229, 0.1);
+      color: var(--white) !important;
+      padding-left: 26px;
+    }
+    .dropdown-menu i { margin-right: 12px; color: var(--smart-teal); font-size: 14px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px; padding: 6px 14px;
+    }
+    .search-box input {
+      background: transparent; border: none; color: white;
+      font-size: 12px; outline: none; width: 100px;
+    }
+    .search-box input::placeholder { color: var(--soft-text); }
+    .search-box i { color: var(--soft-text); font-size: 13px; }
+
+    .notif-btn { position: relative; color: var(--white); cursor: pointer; font-size: 18px; }
+    .notif-btn .badge {
+      position: absolute; top: -4px; right: -6px;
+      background: var(--cyan); color: var(--deep-navy);
+      font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 10px;
+    }
+
+    .btn-login { color: var(--white); font-weight: 600; font-size: 13px; padding: 6px 12px; }
+    .btn-login:hover { color: var(--smart-teal); }
+
+    .btn-cta {
+      background: var(--smart-teal); color: var(--deep-navy);
+      padding: 9px 22px; border-radius: 50px;
+      font-weight: 700; font-size: 13px; border: none; cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-cta:hover {
+      background: var(--cyan);
+      box-shadow: 0 0 16px rgba(25, 217, 229, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* ─── HERO CONTENT ──────────────────────── */
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 130px 80px 40px;
+      gap: 40px;
+    }
+
+    .hero-left { flex: 1; max-width: 580px; }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      color: var(--cyan); text-transform: uppercase;
+      background: rgba(25, 217, 229, 0.1);
+      border: 1px solid rgba(25, 217, 229, 0.3);
+      padding: 6px 14px; border-radius: 50px; margin-bottom: 28px;
+    }
+
+    .hero-title {
+      font-size: 68px; font-weight: 900; line-height: 1.08; margin-bottom: 24px;
+    }
+
+    .hero-desc {
+      font-size: 17px; color: var(--soft-text); line-height: 1.7; margin-bottom: 40px;
+    }
+
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .btn-primary-hero {
+      background: var(--smart-teal); color: var(--deep-navy);
+      padding: 14px 30px; border-radius: 50px;
+      font-weight: 700; font-size: 15px;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s;
+    }
+    .btn-primary-hero:hover {
+      background: var(--cyan);
+      box-shadow: 0 0 22px rgba(0, 199, 183, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost-hero {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--white); padding: 14px 30px; border-radius: 50px;
+      font-weight: 600; font-size: 15px;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s;
+    }
+    .btn-ghost-hero:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: var(--cyan);
+    }
+
+    /* ─── LIVE CARD ─────────────────────────── */
+    .hero-right { flex: 0 0 340px; }
+
+    .live-card { padding: 28px; }
+    .live-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .live-card-title { font-family: 'Outfit'; font-size: 18px; font-weight: 700; }
+    .pulse-status { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; color: var(--green); }
+    .pulse-dot {
+      width: 7px; height: 7px;
+      background: var(--green); border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: livepulse 2s infinite;
+    }
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .stat-rows { display: flex; flex-direction: column; }
+    .stat-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .stat-icon-box {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(25, 217, 229, 0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--cyan); flex-shrink: 0;
+    }
+    .stat-label { font-size: 10px; color: var(--soft-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+    .stat-value { font-size: 14px; font-weight: 700; }
+
+
+
+    /* ─── STATS BAR ─────────────────────────── */
+    .stats-bar-section {
+      position: relative; z-index: 2;
+      padding: 0 80px 48px;
+    }
+    .stats-bar {
+      display: flex; justify-content: space-around;
+      padding: 24px 40px; border-radius: 20px;
+    }
+    .hz-stat { text-align: center; }
+    .hz-val { font-family: 'Outfit'; font-size: 28px; font-weight: 800; color: var(--white); }
+    .hz-lbl { font-size: 12px; color: var(--soft-text); margin-top: 4px; }
+
+    /* ─── SERVICES SECTION ───────────────────── */
+    .services-section {
+      background: var(--deep-navy);
+      padding: 100px 80px;
+    }
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px; color: var(--smart-teal);
+      text-transform: uppercase; margin-bottom: 16px; display: block;
+    }
+    .section-header h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; }
+    .section-header p { font-size: 16px; color: var(--soft-text); max-width: 560px; margin: 0 auto; line-height: 1.6; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+    .svc-card {
+      background: rgba(16, 33, 56, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px; padding: 32px 24px;
+      cursor: pointer; position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .svc-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at top right, rgba(0, 199, 183, 0.15), transparent 70%);
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .svc-card:hover {
+      transform: translateY(-10px);
+      border-color: rgba(0, 199, 183, 0.4);
+      background: rgba(16, 33, 56, 0.8);
+      box-shadow: 0 20px 40px rgba(0, 199, 183, 0.15), 0 0 20px rgba(0, 199, 183, 0.1) inset;
+    }
+    .svc-card:hover::before { opacity: 1; }
+    .svc-icon {
+      width: 54px; height: 54px; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(25, 217, 229, 0.2) 0%, rgba(0, 199, 183, 0.05) 100%);
+      border: 1px solid rgba(0, 199, 183, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: var(--cyan); margin-bottom: 22px;
+      position: relative; z-index: 1;
+      box-shadow: 0 8px 16px rgba(0, 199, 183, 0.1);
+      transition: transform 0.4s ease;
+    }
+    .svc-card:hover .svc-icon { transform: scale(1.1) rotate(5deg); box-shadow: 0 12px 24px rgba(0, 199, 183, 0.2); }
+    .svc-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; position: relative; z-index: 1; letter-spacing: -0.3px; }
+    .svc-card p  { font-size: 13px; color: var(--soft-text); line-height: 1.55; flex: 1; margin-bottom: 20px; position: relative; z-index: 1; }
+    .svc-link {
+      font-size: 13px; font-weight: 600; color: var(--smart-teal);
+      display: flex; align-items: center; gap: 6px; position: relative; z-index: 1;
+      transition: gap 0.3s;
+    }
+    .svc-card:hover .svc-link { gap: 10px; }
+
+    /* ─── FOOTER ─────────────────────────────── */
+    .site-footer {
+      background: linear-gradient(180deg, #061122 0%, #02060c 100%);
+      border-top: 1px solid rgba(25, 217, 229, 0.15);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+      padding: 60px 80px 0;
+      position: relative;
+    }
+    .site-footer::before {
+       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+       background: linear-gradient(90deg, transparent, rgba(0, 199, 183, 0.5), transparent);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1.5fr 1.5fr 2fr;
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+
+    .footer-brand-logo {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .footer-brand-logo i { font-size: 28px; color: var(--smart-teal); }
+    .footer-brand-logo-text .name { font-family: 'Outfit'; font-size: 20px; font-weight: 800; line-height: 1; }
+    .footer-brand-logo-text .sub { font-size: 9px; color: var(--soft-text); letter-spacing: 0.5px; }
+    .footer-brand p { font-size: 13px; color: var(--soft-text); line-height: 1.7; margin-bottom: 24px; }
+
+    .social-links { display: flex; gap: 10px; }
+    .social-link {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--soft-text); font-size: 15px;
+      transition: all 0.3s;
+    }
+    .social-link:hover { background: var(--smart-teal); color: var(--deep-navy); border-color: var(--smart-teal); }
+
+    .footer-col h4 { font-size: 14px; font-weight: 700; margin-bottom: 20px; color: var(--white); }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links li a {
+      font-size: 14px; color: var(--soft-text);
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .footer-links li a i { font-size: 14px; color: var(--smart-teal); opacity: 0.7; transition: opacity 0.3s; }
+    .footer-links li a:hover { color: var(--white); transform: translateX(6px); }
+    .footer-links li a:hover i { opacity: 1; }
+
+    .contact-info { display: flex; flex-direction: column; gap: 14px; }
+    .contact-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--soft-text); line-height: 1.5; }
+    .contact-row i { font-size: 15px; color: var(--smart-teal); margin-top: 2px; flex-shrink: 0; }
+
+    .newsletter h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; margin-top: 24px; }
+    .newsletter p { font-size: 13px; color: var(--soft-text); margin-bottom: 14px; line-height: 1.5; }
+    .newsletter-form {
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px; padding: 4px; margin-bottom: 20px;
+    }
+    .newsletter-form input {
+      flex: 1; background: transparent; border: none;
+      padding: 8px 14px; color: white; font-size: 13px; outline: none;
+    }
+    .newsletter-form input::placeholder { color: var(--soft-text); }
+    .newsletter-form button {
+      background: var(--smart-teal); color: var(--deep-navy);
+      border: none; width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; transition: background 0.3s;
+    }
+    .newsletter-form button:hover { background: var(--cyan); }
+
+
+    .footer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 0 -80px; }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 24px 0; font-size: 12px; color: var(--soft-text);
+    }
+    .footer-bottom-links { display: flex; gap: 20px; }
+    .footer-bottom-links a { color: var(--soft-text); transition: color 0.3s; }
+    .footer-bottom-links a:hover { color: var(--white); }
+    .footer-tagline { display: flex; align-items: center; gap: 6px; color: var(--smart-teal); font-weight: 600; }
+    .back-to-top {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--soft-text); font-size: 12px; transition: all 0.3s;
+    }
+    .back-to-top:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+
+    /* ─── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 1100px) {
+      .cards-grid { grid-template-columns: repeat(3, 1fr); }
+      .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .hero-content { flex-direction: column; padding: 110px 40px 30px; }
+      .hero-left { max-width: 100%; text-align: center; }
+      .hero-title { font-size: 48px; }
+      .hero-btns { justify-content: center; }
+      .hero-right { width: 100%; }
+      .live-card { width: 100%; }
+      .stats-bar { flex-wrap: wrap; gap: 20px; justify-content: center; text-align: center; }
+      .stats-bar-section { padding: 0 40px 40px; }
+      .services-section { padding: 60px 40px; }
+      .site-footer { padding: 60px 40px 0; }
+      .footer-divider { margin: 0 -40px; }
+    }
+    @media (max-width: 640px) {
+      .nav-links, .search-box { display: none; }
+      .hero-title { font-size: 38px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .site-footer { padding: 48px 24px 0; }
+      .footer-divider { margin: 0 -24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      .floating-icons { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fi, .pulse-dot { animation: none; }
+    }
+    /* Project Details Modal */
+    .project-modal-overlay {
+      position: fixed; inset: 0; background: rgba(2, 6, 12, 0.85); backdrop-filter: blur(8px);
+      z-index: 10000; display: flex; justify-content: center; align-items: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .project-modal-overlay.active { opacity: 1; visibility: visible; }
+    
+    .project-modal {
+      background: linear-gradient(135deg, rgba(16, 33, 56, 0.95), rgba(11, 26, 47, 0.95));
+      border: 1px solid rgba(25, 217, 229, 0.2); border-radius: 24px;
+      width: 90%; max-width: 600px; padding: 40px; position: relative;
+      transform: translateY(20px) scale(0.95); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 199, 183, 0.1) inset;
+    }
+    .project-modal-overlay.active .project-modal { transform: translateY(0) scale(1); }
+    
+    .close-modal-btn {
+      position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.1);
+      border: none; color: var(--white); width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    }
+    .close-modal-btn:hover { background: rgba(239, 68, 68, 0.8); }
+    
+    .modal-header { text-align: center; margin-bottom: 30px; }
+    .modal-icon { font-size: 48px; color: var(--smart-teal); margin-bottom: 16px; display: inline-block; }
+    .modal-header h2 { font-size: 28px; font-family: 'Outfit'; font-weight: 700; color: var(--white); margin:0;}
+    
+    .modal-body p.modal-desc { color: var(--soft-text); font-size: 15px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+    
+    .modal-feature { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .modal-feature i { font-size: 24px; color: var(--cyan); background: rgba(25, 217, 229, 0.1); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0; }
+    .modal-feature h4 { font-size: 16px; font-weight: 600; color: var(--white); margin: 0 0 4px 0; }
+    .modal-feature p { font-size: 13px; margin: 0; color: var(--soft-text); line-height: 1.5; }
+    
+    .modal-footer { margin-top: 30px; display: flex; justify-content: center; }
+    .modal-footer .btn-primary { 
+      background: linear-gradient(135deg, var(--smart-teal) 0%, var(--cyan) 100%);
+      color: var(--deep-navy); padding: 12px 32px; border-radius: 50px; font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; transition: transform 0.2s;
+    }
+    .modal-footer .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 199, 183, 0.3); }
+
+  </style>
+</head>
+<body>
+
+  <!-- ══ VIDEO HERO SECTION ═══════════════════════ -->
+  <div class="video-hero-wrapper">
+
+
+    <!-- Background Video: 4K New York Aerial Night Footage (No Copyright) -->
+    <video id="bgVideo" class="bg-video" autoplay loop muted playsinline
+           poster="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&q=80">
+      <!-- 4K 3840×2160 — primary source -->
+      <source src="/videos/city-bg-4k.mp4" type="video/mp4">
+      <!-- 1080p fallback for slower connections -->
+      <source src="/videos/city-bg-1080.mp4" type="video/mp4">
+    </video>
+
+    <div class="video-overlay"></div>
+
+
+
+    <!-- ── Header ── -->
+    <header class="header-wrapper" id="navbar">
+      <nav class="main-nav">
+        <a href="/" class="nav-brand">
+          <i class="bi bi-buildings-fill"></i>
+          <div class="nav-brand-text">
+            <span class="nav-brand-name">SmartCityX</span>
+            <span class="nav-brand-sub">Smarter Cities. Brighter Tomorrows.</span>
+          </div>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li class="nav-item dropdown">
+            <a href="#services">Services <i class="bi bi-chevron-down dd-icon"></i></a>
+            <div class="dropdown-menu">
+              <a href="#services"><i class="bi bi-car-front"></i> Transportation</a>
+              <a href="#services"><i class="bi bi-droplet"></i> Water & Energy</a>
+              <a href="#services"><i class="bi bi-people"></i> Public Services</a>
+              <a href="#services"><i class="bi bi-building"></i> Infrastructure</a>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a href="/analytics">Analytics <i class="bi bi-chevron-down dd-icon"></i></a>
+            <div class="dropdown-menu">
+              <a href="/analytics"><i class="bi bi-graph-up-arrow"></i> Real-time Analytics</a>
+              <a href="/analytics"><i class="bi bi-cpu"></i> Algorithm Workbench</a>
+              <a href="/dashboard"><i class="bi bi-pie-chart"></i> Reports & Insights</a>
+            </div>
+          </li>
+          <li><a href="/dashboard">Reports</a></li>
+          <li class="nav-item dropdown">
+            <a href="/water-energy">Resources <i class="bi bi-chevron-down dd-icon"></i></a>
+            <div class="dropdown-menu">
+              <a href="/water-energy"><i class="bi bi-water"></i> Water Grid</a>
+              <a href="/water-energy"><i class="bi bi-lightning"></i> Energy Grid</a>
+            </div>
+          </li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search..."/>
+          </div>
+          <div class="notif-btn">
+            <i class="bi bi-bell"></i>
+            <span class="badge">3</span>
+          </div>
+          <a th:href="@{/login}" class="btn-login">Login</a>
+          <a th:href="@{/login}" class="btn-cta">Get Started</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- ── Hero Content ── -->
+    <div class="hero-content">
+      <div class="hero-left">
+        <span class="hero-eyebrow">Integrated Smart-City Analytics Platform</span>
+        <h1 class="hero-title">
+          Smarter Data.<br>
+          <span class="text-gradient">Better Cities.</span>
+        </h1>
+        <p class="hero-desc">
+          SmartCityX integrates transportation, water, energy, public services, infrastructure documents and real-time IoT data to make cities more efficient, sustainable and livable.
+        </p>
+        <div class="hero-btns">
+          <a th:href="@{/dashboard}" class="btn-primary-hero">
+            Explore Dashboard <i class="bi bi-arrow-right"></i>
+          </a>
+          <a href="#" class="btn-ghost-hero">
+            <i class="bi bi-play-fill" style="font-size:18px;"></i> Watch City in Action
+          </a>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- ── Stats Bar ── -->
+    <div class="stats-bar-section">
+      <div class="stats-bar glass-effect">
+        <div class="hz-stat">
+          <div class="hz-val">1M+</div>
+          <div class="hz-lbl">Citizen Reports</div>
+        </div>
+        <div class="hz-stat">
+          <div class="hz-val">500+</div>
+          <div class="hz-lbl">IoT Sensors</div>
+        </div>
+        <div class="hz-stat">
+          <div class="hz-val">36</div>
+          <div class="hz-lbl">Active Projects</div>
+        </div>
+        <div class="hz-stat">
+          <div class="hz-val">30%</div>
+          <div class="hz-lbl">Higher Efficiency</div>
+        </div>
+        <div class="hz-stat">
+          <div class="hz-val">100%</div>
+          <div class="hz-lbl">People-Centric</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end .video-hero-wrapper -->
+
+  <!-- ══ SERVICES SECTION ═══════════════════════ -->
+  <section id="services" class="services-section">
+    <div class="section-header">
+      <span class="section-eyebrow">Our Modules</span>
+      <h2>Transforming Urban Infrastructure</h2>
+      <p>A comprehensive suite of smart-city modules designed to monitor, analyze, and optimize every aspect of urban living in real-time.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="svc-card" onclick="window.location.href='/transportation'">
+        <div class="svc-icon"><i class="bi bi-car-front-fill"></i></div>
+        <h3>Transportation & Traffic</h3>
+        <p>Optimize routes, manage congestion, and analyze real-time mobility patterns across the city network.</p>
+        <div class="svc-link">Explore Traffic AI <i class="bi bi-arrow-right"></i></div>
+      </div>
+      <div class="svc-card" onclick="window.location.href='/water-energy'">
+        <div class="svc-icon" style="color:#38bdf8; background:rgba(56,189,248,0.12);"><i class="bi bi-droplet-fill"></i></div>
+        <h3>Water & Energy Resources</h3>
+        <p>Monitor supply levels, detect anomalies, and ensure sustainable distribution of essential resources.</p>
+        <div class="svc-link">Monitor Resources <i class="bi bi-arrow-right"></i></div>
+      </div>
+      <div class="svc-card" onclick="window.location.href='/requests'">
+        <div class="svc-icon" style="color:var(--green); background:rgba(98,217,155,0.12);"><i class="bi bi-people-fill"></i></div>
+        <h3>Public Services</h3>
+        <p>Streamline citizen requests, track civic issues, and improve community service response times.</p>
+        <div class="svc-link">View Public Services <i class="bi bi-arrow-right"></i></div>
+      </div>
+      <div class="svc-card" onclick="window.location.href='/documents'">
+        <div class="svc-icon" style="color:#a78bfa; background:rgba(167,139,250,0.12);"><i class="bi bi-building"></i></div>
+        <h3>City Infrastructure</h3>
+        <p>Securely index and manage critical blueprints, permits, and municipal documents.</p>
+        <div class="svc-link">Access Infrastructure <i class="bi bi-arrow-right"></i></div>
+      </div>
+      <div class="svc-card" onclick="window.location.href='/sensors'">
+        <div class="svc-icon"><i class="bi bi-wifi"></i></div>
+        <h3>IoT & Sensor Observations</h3>
+        <p>Aggregate and visualize live data streams from thousands of connected urban devices.</p>
+        <div class="svc-link">Live IoT Data <i class="bi bi-arrow-right"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══════════════════════════════════ -->
+  <footer id="contact" class="site-footer">
+    <div class="footer-grid">
+
+      <!-- Brand Col -->
+      <div class="footer-brand">
+        <div class="footer-brand-logo">
+          <i class="bi bi-buildings-fill"></i>
+          <div class="footer-brand-logo-text">
+            <div class="name">SmartCityX</div>
+            <div class="sub">Smarter Cities. Brighter Tomorrows.</div>
+          </div>
+        </div>
+        <p>An integrated smart-city analytics platform for a sustainable, efficient and people-centric future. Leveraging data, AI and innovation to build better, greener cities.</p>
+        <div class="social-links">
+          <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="/"><i class="bi bi-chevron-right"></i> Home</a></li>
+          <li><a href="/"><i class="bi bi-chevron-right"></i> About Us</a></li>
+          <li><a href="#services"><i class="bi bi-chevron-right"></i> Services</a></li>
+          <li><a href="/analytics"><i class="bi bi-chevron-right"></i> City Insights</a></li>
+          <li><a href="/dashboard"><i class="bi bi-chevron-right"></i> Reports</a></li>
+          <li><a href="/water-energy"><i class="bi bi-chevron-right"></i> Resources</a></li>
+          <li><a href="#contact"><i class="bi bi-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div class="footer-col">
+        <h4>Our Services</h4>
+        <ul class="footer-links">
+          <li><a href="/transportation"><i class="bi bi-car-front-fill"></i> Transportation &amp; Traffic</a></li>
+          <li><a href="/water-energy"><i class="bi bi-droplet-fill"></i> Water &amp; Energy</a></li>
+          <li><a href="/requests"><i class="bi bi-people-fill"></i> Public Services</a></li>
+          <li><a href="/documents"><i class="bi bi-building"></i> City Infrastructure</a></li>
+          <li><a href="/sensors"><i class="bi bi-wifi"></i> IoT &amp; Sensors</a></li>
+          <li><a href="/analytics"><i class="bi bi-bar-chart-fill"></i> Analytics &amp; Reports</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul class="footer-links">
+          <li><a href="#" onclick="openProjectModal(event)"><i class="bi bi-info-circle"></i> About SmartCityX</a></li>
+          <li><a href="https://github.com/Satyamkumar-kapri/SmartCityX" target="_blank"><i class="bi bi-github"></i> Source Code</a></li>
+          <li><a href="/requests"><i class="bi bi-chat-dots"></i> Public Forum (FAQs)</a></li>
+          <li><a href="/requests"><i class="bi bi-shield-check"></i> Report an Issue</a></li>
+          <li><a href="#"><i class="bi bi-file-text"></i> Privacy Policy</a></li>
+          <li><a href="#"><i class="bi bi-file-earmark-check"></i> Terms of Service</a></li>
+          <li><a href="#contact"><i class="bi bi-headset"></i> Feedback</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact + Newsletter -->
+      <div class="footer-col">
+        <h4>Contact Us</h4>
+        <div class="contact-info">
+          <div class="contact-row"><i class="bi bi-geo-alt-fill"></i> SmartCityX HQ, Greenfield City, India 500001</div>
+          <div class="contact-row"><i class="bi bi-telephone-fill"></i> +91 12345 67890</div>
+          <div class="contact-row"><i class="bi bi-envelope-fill"></i> support@smartcityx.gov.in</div>
+          <div class="contact-row"><i class="bi bi-clock-fill"></i> Mon – Fri, 9:00 AM – 6:00 PM</div>
+        </div>
+
+        <div class="newsletter">
+          <h4>Stay Updated</h4>
+          <p>Subscribe for city insights, updates and announcements.</p>
+          <form class="newsletter-form" onsubmit="return false;">
+            <i class="bi bi-envelope" style="color:var(--soft-text); margin:10px 0 0 12px; font-size:14px;"></i>
+            <input type="email" placeholder="Your email address"/>
+            <button type="submit"><i class="bi bi-arrow-right"></i></button>
+          </form>
+        </div>
+
+      </div>
+
+    </div><!-- end .footer-grid -->
+
+    <hr class="footer-divider"/>
+
+    <div class="footer-bottom">
+      <div>&copy; 2025 SmartCityX. All rights reserved.</div>
+      <div class="footer-bottom-links">
+        <a href="#">Data</a>
+        <a href="#">Technology</a>
+        <a href="#">People</a>
+        <a href="#">Sustainable Cities</a>
+      </div>
+      <div class="footer-tagline"><i class="bi bi-leaf-fill"></i> A Cleaner Today. A Greener Tomorrow.</div>
+      <a href="#" class="back-to-top"><i class="bi bi-arrow-up"></i> Back to Top</a>
+    </div>
+  </footer>
+
+  <script>
+    // Compact sticky header on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Force video autoplay — browsers sometimes need an explicit .play() call
+    const bgVideo = document.getElementById('bgVideo');
+    if (bgVideo) {
+      bgVideo.muted = true; // ensure muted so browser policy allows autoplay
+      bgVideo.setAttribute('playsinline', '');
+      
+      const forcePlay = () => {
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Autoplay blocked, wait for interaction
+            const resumeVideo = () => {
+              bgVideo.play();
+              document.removeEventListener('click', resumeVideo);
+              document.removeEventListener('touchstart', resumeVideo);
+            };
+            document.addEventListener('click', resumeVideo);
+            document.addEventListener('touchstart', resumeVideo);
+          });
+        }
+      };
+
+      forcePlay();
+
+      // Ensure it never stops playing
+      bgVideo.addEventListener('pause', () => {
+         forcePlay();
+      });
+      bgVideo.addEventListener('ended', () => {
+         forcePlay();
+      });
+    }
+  </script>
+  <!-- Project Details Modal -->
+  <div id="projectDetailsModal" class="project-modal-overlay">
+    <div class="project-modal">
+      <button class="close-modal-btn" onclick="closeProjectModal()"><i class="bi bi-x-lg"></i></button>
+      <div class="modal-header">
+        <i class="bi bi-buildings-fill modal-icon"></i>
+        <h2>About SmartCityX</h2>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc"><strong>SmartCityX</strong> is an advanced urban management platform built to monitor, analyze, and optimize city infrastructure in real-time. Created for a modern connected world, this platform integrates various urban systems into a single, cohesive dashboard.</p>
+        
+        <div class="modal-feature">
+          <i class="bi bi-cpu"></i>
+          <div>
+            <h4>Algorithm Workbench</h4>
+            <p>Utilizes complex data structures and algorithms (Dijkstra's, Aho-Corasick, DP) for traffic routing, pattern matching, and resource optimization.</p>
+          </div>
+        </div>
+        
+        <div class="modal-feature">
+          <i class="bi bi-database-fill"></i>
+          <div>
+            <h4>Cloud-Native Architecture</h4>
+            <p>Powered by Java Spring Boot and securely connected to a serverless PostgreSQL database (Neon) for highly available, real-time data streaming.</p>
+          </div>
+        </div>
+        
+        <div class="modal-feature">
+          <i class="bi bi-palette-fill"></i>
+          <div>
+            <h4>Premium UI/UX</h4>
+            <p>Designed with glassmorphism, fluid micro-interactions, and a responsive layout that provides operators with a crystal-clear view of the city's heartbeat.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="window.open('https://github.com/Satyamkumar-kapri/SmartCityX', '_blank')">View GitHub Repository</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openProjectModal(e) {
+      if(e) e.preventDefault();
+      document.getElementById('projectDetailsModal').classList.add('active');
+    }
+    function closeProjectModal() {
+      document.getElementById('projectDetailsModal').classList.remove('active');
+    }
+    // Close modal on outside click
+    document.getElementById('projectDetailsModal').addEventListener('click', function(e) {
+      if(e.target === this) closeProjectModal();
+    });
+  </script>
+
+</body>
+</html>

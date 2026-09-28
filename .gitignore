@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+backend/target/
+frontend/dist/
+
+# Env vars
+.env
+.env.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,34 @@
+2026-09-10 19:17:53.738133+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "\000a    create table sensor_observations (\000a        max_threshold float(53),\000a        min_threshold float(53),\000a        [*]value float(53) not null,\000a        id bigserial not null,\000a        ""timestamp"" timestamp(6) not null,\000a        status varchar(20),\000a        unit varchar(20),\000a        sensor_type varchar(30) not null check (sensor_type in ('TRAFFIC','AIR_QUALITY','WATER_LEVEL','ELECTRICITY','TEMPERATURE','NOISE')),\000a        sensor_id varchar(50) not null,\000a        zone varchar(100) not null,\000a        primary key (id)\000a    )"; expected "identifier"; SQL statement:
+
+    create table sensor_observations (
+        max_threshold float(53),
+        min_threshold float(53),
+        value float(53) not null,
+        id bigserial not null,
+        "timestamp" timestamp(6) not null,
+        status varchar(20),
+        unit varchar(20),
+        sensor_type varchar(30) not null check (sensor_type in ('TRAFFIC','AIR_QUALITY','WATER_LEVEL','ELECTRICITY','TEMPERATURE','NOISE')),
+        sensor_id varchar(50) not null,
+        zone varchar(100) not null,
+        primary key (id)
+    ) [42001-224]
+2026-09-10 19:17:53.748109+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "sensor_observations" not found; SQL statement:
+
+    create index idx_sensor_type 
+       on sensor_observations (sensor_ [42102-224]
+2026-09-10 19:17:53.748903+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "sensor_observations" not found; SQL statement:
+
+    create index idx_sensor_zone 
+       on sensor_observations ( [42102-224]
+2026-09-10 19:17:53.749508+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "sensor_observations" not found; SQL statement:
+
+    create index idx_sensor_timestamp 
+       on sensor_observations (times [42102-224]
+2026-09-10 19:17:56.037236+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "sensor_observations" not found; SQL statement:
+insert into sensor_observations (max_threshold,min_threshold,sensor_id,sensor_type,status,"timestamp",unit,value,zone) values (?,?,?,?,?,?,?,?,?) [42102-224]

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Reports & Documents | SmartCityX', 'City Documents')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('reports')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Document Library', 'Access official city reports, tenders, and policies')}"></div>
+    <div class="page-content">
+      <div class="card-solid">
+        <h3 class="card-title mb-4">Official Records</h3>
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Department</th>
+                <th>Published Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="doc : ${documents}">
+                <td>
+                    <div style="font-weight:600; color:var(--text-primary);" th:text="${doc.title}"></div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" th:text="${#strings.abbreviate(doc.content, 60)}"></div>
+                </td>
+                <td><span class="badge" style="background:rgba(25, 217, 229, 0.1); color:var(--accent-cyan); border:1px solid var(--accent-cyan);" th:text="${doc.documentType}"></span></td>
+                <td th:text="${doc.department}"></td>
+                <td style="font-family:'Fira Code', monospace; font-size:12px; color:var(--text-muted);" th:text="${#temporals.format(doc.createdAt, 'dd MMM yyyy')}"></td>
+                <td>
+                  <button class="btn btn-sm btn-primary-smart"><i class="bi bi-download"></i> PDF</button>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(documents)}">
+                <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-file-earmark-text" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No documents found.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

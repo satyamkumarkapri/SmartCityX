@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Bipartite Matching | SmartCityX', 'M4 Bipartite')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('bipartite')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M4 – Bipartite Resource Matching', 'Assign city resources to service requirements')}"></div>
+    <div class="page-content">
+      <div class="grid-2">
+        <div class="card-glass">
+          <div class="section-title mb-3"><i class="bi bi-shuffle"></i> Bipartite Matching Setup</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Match city resources (left set) to service requirements (right set) optimally.
+            Uses augmenting path algorithm. O(V × E).
+          </p>
+
+          <label class="form-label-smart">Resources (Left Set, one per line)</label>
+          <textarea id="bp-left" class="form-control-smart mb-3" rows="5">Ambulance 1
+Ambulance 2
+Water Tanker 1
+Traffic Unit 1
+Emergency Team A</textarea>
+
+          <label class="form-label-smart">Requirements (Right Set, one per line)</label>
+          <textarea id="bp-right" class="form-control-smart mb-3" rows="5">Emergency Zone A
+Emergency Zone B
+Water Leak Report
+Traffic Gridlock
+Flood Response</textarea>
+
+          <label class="form-label-smart">Edges: resource_idx → requirement_idx (0-indexed, one per line)</label>
+          <textarea id="bp-edges" class="form-control-smart mb-3" rows="6">0 0
+0 1
+1 0
+1 1
+2 2
+3 3
+4 4
+4 0</textarea>
+
+          <button class="btn-primary-smart" onclick="runBP()"><i class="bi bi-play-fill"></i> Find Maximum Matching</button>
+        </div>
+
+        <div id="bp-result" class="algo-result" style="display:none;">
+          <div class="mb-4">
+            <div class="result-label">Maximum Matching Size</div>
+            <div class="result-value" id="bp-size">-</div>
+          </div>
+
+          <div class="result-label mb-2">Matched Pairs</div>
+          <div id="bp-pairs"></div>
+
+          <div class="result-label mt-4 mb-2">Bipartite Graph Visualization</div>
+          <canvas id="bp-canvas" width="400" height="300" style="background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border);width:100%;"></canvas>
+        </div>
+
+        <div id="bp-placeholder" class="card-glass" style="text-align:center;padding:60px;color:var(--text-muted);">
+          <div style="font-size:48px;margin-bottom:12px;">🔀</div>
+          <div>Run the algorithm to see matching results</div>
+        </div>
+      </div>
+
+      <div class="card-glass mt-4">
+        <div class="section-title mb-3"><i class="bi bi-book"></i> About Bipartite Matching</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          In SmartCityX, bipartite matching assigns limited city resources to service requests optimally.
+          The left set represents available units (ambulances, tankers, etc.) and the right set represents
+          active incidents. The algorithm finds the maximum number of assignments where each resource
+          handles exactly one incident and each incident is handled by at most one resource.
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+let lastLeft = [], lastRight = [], lastEdges = [], lastMatching = {};
+
+async function runBP() {
+  lastLeft = document.getElementById('bp-left').value.trim().split('\n').filter(Boolean);
+  lastRight = document.getElementById('bp-right').value.trim().split('\n').filter(Boolean);
+
+  lastEdges = document.getElementById('bp-edges').value.trim().split('\n').map(line => {
+    const parts = line.trim().split(/\s+/);
+    return [parseInt(parts[0]), parseInt(parts[1])];
+  }).filter(e => !isNaN(e[0]) && !isNaN(e[1]));
+
+  const res = await fetch('/api/algorithms/bipartite-matching', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({left: lastLeft, right: lastRight, edges: lastEdges})
+  });
+  const data = await res.json();
+
+  document.getElementById('bp-size').textContent = data.matchingSize;
+  document.getElementById('bp-pairs').innerHTML = (data.matchingPairs||[]).map(p =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.08);border-radius:8px;margin-bottom:6px;border:1px solid rgba(16,185,129,0.2);">
+      <span style="color:var(--accent-blue);font-weight:600;">${p.split(' → ')[0]}</span>
+      <i class="bi bi-arrow-right" style="color:var(--accent-cyan);"></i>
+      <span style="color:var(--accent-green);font-weight:600;">${p.split(' → ')[1]}</span>
+    </div>`
+  ).join('');
+
+  lastMatching = {};
+  for (const p of (data.matchingPairs||[])) {
+    const [l, r] = p.split(' → ');
+    const li = lastLeft.indexOf(l);
+    const ri = lastRight.indexOf(r);
+    if (li >= 0 && ri >= 0) lastMatching[li] = ri;
+  }
+
+  document.getElementById('bp-result').style.display = 'block';
+  document.getElementById('bp-placeholder').style.display = 'none';
+  drawBPGraph();
+}
+
+function drawBPGraph() {
+  const canvas = document.getElementById('bp-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const lCount = Math.min(lastLeft.length, 6);
+  const rCount = Math.min(lastRight.length, 6);
+  const ly = (i) => (i+1) * H / (lCount+1);
+  const ry = (i) => (i+1) * H / (rCount+1);
+
+  // Draw edges
+  for (const [l, r] of lastEdges) {
+    if (l >= lCount || r >= rCount) continue;
+    const isMatched = lastMatching[l] === r;
+    ctx.beginPath();
+    ctx.moveTo(100, ly(l));
+    ctx.lineTo(W-100, ry(r));
+    ctx.strokeStyle = isMatched ? '#10b981' : 'rgba(148,163,184,0.2)';
+    ctx.lineWidth = isMatched ? 2.5 : 1;
+    ctx.stroke();
+  }
+
+  // Left nodes
+  for (let i = 0; i < lCount; i++) {
+    ctx.beginPath();
+    ctx.arc(100, ly(i), 18, 0, Math.PI*2);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.strokeStyle = lastMatching[i] !== undefined ? '#10b981' : '#2563eb';
+    ctx.lineWidth = 2;
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f1f5f9'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
+    ctx.fillText(lastLeft[i]?.substring(0,6)+'...', 100, ly(i)+4);
+  }
+
+  // Right nodes
+  for (let i = 0; i < rCount; i++) {
+    const isMatched = Object.values(lastMatching).includes(i);
+    ctx.beginPath();
+    ctx.arc(W-100, ry(i), 18, 0, Math.PI*2);
+    ctx.fillStyle = '#064e3b';
+    ctx.strokeStyle = isMatched ? '#10b981' : '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f1f5f9'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
+    ctx.fillText(lastRight[i]?.substring(0,6)+'...', W-100, ry(i)+4);
+  }
+  ctx.textAlign = 'left';
+}
+</script>
+</body>
+</html>

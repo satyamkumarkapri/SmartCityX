@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Analytics & Reports | SmartCityX', 'City analytics')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('analytics')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Analytics & Reports', 'Analyze city data, resource usage, and service efficiency')}"></div>
+    <div class="page-content">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div></div>
+        <button class="btn" style="background:#14b8a6; color:white;"><i class="bi bi-download"></i> Export Data</button>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid-2 mb-4">
+        <div class="card-solid">
+          <div class="card-header">
+            <h3 class="card-title">Resource Usage Trend</h3>
+            <select class="form-select" style="width:100px; font-size:12px; border:1px solid var(--border-subtle); background:rgba(0,0,0,0.2); color:white;">
+              <option>This Week</option>
+              <option>This Month</option>
+            </select>
+          </div>
+          <div style="position: relative; height: 250px; width: 100%;">
+            <canvas id="usageChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="card-solid">
+          <div class="card-header">
+            <h3 class="card-title">Service Efficiency</h3>
+            <select class="form-select" style="width:100px; font-size:12px; border:1px solid var(--border-subtle); background:rgba(0,0,0,0.2); color:white;">
+              <option>This Week</option>
+              <option>This Month</option>
+            </select>
+          </div>
+          <div style="position: relative; height: 250px; width: 100%;">
+            <canvas id="efficiencyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- DSA Modules / Reports -->
+      <div class="card-solid mb-4">
+        <div class="card-header">
+          <h3 class="card-title">Advanced Algorithm Workbenches</h3>
+        </div>
+        <div class="grid-3">
+          <a href="/analytics/string-search" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">🔍</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M1 – String Algorithms</div>
+              <div style="font-size:12px; color:var(--text-muted);">KMP · Z-Function · Rabin-Karp</div>
+            </div>
+          </a>
+          <a href="/analytics/suffix" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">📑</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M2 – Suffix Structures</div>
+              <div style="font-size:12px; color:var(--text-muted);">Suffix Array · Kasai LCP</div>
+            </div>
+          </a>
+          <a href="/analytics/fuzzy" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">🔤</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M3 – Edit Distance</div>
+              <div style="font-size:12px; color:var(--text-muted);">Levenshtein · Fuzzy Match</div>
+            </div>
+          </a>
+          <a href="/analytics/network-flow" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">🌊</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M4 – Network Flow</div>
+              <div style="font-size:12px; color:var(--text-muted);">Ford-Fulkerson · Edmonds-Karp</div>
+            </div>
+          </a>
+          <a href="/analytics/np" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">🧩</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M5 – NP-Completeness</div>
+              <div style="font-size:12px; color:var(--text-muted);">SAT · Clique · Vertex Cover</div>
+            </div>
+          </a>
+          <a href="/analytics/parallel" style="text-decoration:none;">
+            <div style="background:var(--bg-glass); border:1px solid var(--border-subtle); border-radius:8px; padding:20px; text-align:center; transition:var(--transition); cursor:pointer;">
+              <div style="font-size:32px; margin-bottom:12px;">⚡</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">M6 – Parallel</div>
+              <div style="font-size:12px; color:var(--text-muted);">Blelloch Scan · Parallel Reduce</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Runs -->
+      <div class="card-solid">
+        <div class="card-header">
+          <h3 class="card-title">Recent Algorithm Executions</h3>
+        </div>
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">#</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Algorithm</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Module</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Input</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Result</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Time (ms)</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Ran At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="run : ${recentRuns}">
+                <td style="font-size:12px; color:#64748b;" th:text="${run.id}"></td>
+                <td style="font-weight:600; color:#0f172a; font-size:13px;" th:text="${run.algorithmName}"></td>
+                <td>
+                  <span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:600;" th:text="${run.module}"></span>
+                </td>
+                <td style="font-size:12px; color:#64748b; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" th:text="${run.inputData}"></td>
+                <td style="font-size:12px; color:#0f172a; font-weight:500;" th:text="${run.resultData}"></td>
+                <td style="font-weight:700; color:#16a34a; font-size:13px;" th:text="${run.executionTimeMs}+'ms'"></td>
+                <td style="font-size:12px; color:#94a3b8;" th:text="${run.ranAt != null ? #temporals.format(run.ranAt, 'dd-MMM HH:mm') : '-'}"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(recentRuns)}">
+                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-clock-history" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No algorithm runs yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+  // Usage Chart
+  const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+  if (usageCtx) {
+    Chart.defaults.color = 'rgba(255,255,255,0.7)';
+    new Chart(usageCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Power (MW)',
+          data: [420, 380, 510, 490, 650, 550],
+          backgroundColor: '#19d9e5',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(255,255,255,0.5)'} },
+          x: { border: {display: false}, grid: {display: false}, ticks: {color: 'rgba(255,255,255,0.5)'} }
+        }
+      }
+    });
+  }
+
+  // Efficiency Chart
+  const effCtx = document.getElementById('efficiencyChart')?.getContext('2d');
+  if (effCtx) {
+    new Chart(effCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Response Time (hrs)',
+          data: [24, 22, 18, 15, 12, 8],
+          borderColor: '#00c7b7',
+          backgroundColor: 'rgba(0, 199, 183, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(255,255,255,0.5)'} },
+          x: { border: {display: false}, grid: {display: false}, ticks: {color: 'rgba(255,255,255,0.5)'} }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartCityX – Sign Up</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --deep-navy: #02060c;
+      --navy-blue: #0b1a2f;
+      --smart-teal: #00c7b7;
+      --cyan: #19d9e5;
+      --soft-text: #a0aec0;
+      --white: #ffffff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    
+    body {
+      background: var(--deep-navy);
+      color: var(--white);
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    
+    .split-layout {
+      display: flex;
+      width: 100%;
+      flex-direction: row-reverse; /* Mirror layout for signup */
+    }
+    
+    .auth-image {
+      flex: 1.2;
+      background: url('/images/auth-bg.jpg') center/cover no-repeat;
+      position: relative;
+      display: none;
+    }
+    
+    @media (min-width: 1024px) {
+      .auth-image {
+        display: block;
+      }
+    }
+
+    .auth-image::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(-90deg, rgba(2,6,12,0) 0%, rgba(2,6,12,1) 100%);
+    }
+
+    .image-text {
+      position: absolute;
+      bottom: 60px;
+      right: 60px;
+      text-align: right;
+      z-index: 10;
+      max-width: 500px;
+    }
+
+    .image-text h2 {
+      font-family: 'Outfit';
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--smart-teal), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .image-text p {
+      font-size: 16px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.6;
+    }
+
+    .auth-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+    }
+
+    .back-arrow {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      color: var(--soft-text);
+      font-size: 24px;
+      text-decoration: none;
+      transition: color 0.3s, transform 0.3s;
+      z-index: 20;
+    }
+    .back-arrow:hover {
+      color: var(--cyan);
+      transform: translateX(-4px);
+    }
+    
+    .login-form-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .brand { text-align: left; margin-bottom: 32px; }
+    .brand i { font-size: 42px; color: var(--smart-teal); display: inline-block; margin-bottom: 12px; }
+    .brand h1 { font-family: 'Outfit'; font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+    .brand p { font-size: 13px; color: var(--soft-text); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+    
+    .welcome-text { margin-bottom: 32px; }
+    .welcome-text h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .welcome-text p { font-size: 14px; color: var(--soft-text); }
+
+    .form-group { margin-bottom: 20px; position: relative; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--soft-text); margin-bottom: 10px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 14px 16px 14px 46px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; color: var(--white);
+      font-size: 15px; outline: none; transition: all 0.3s;
+      appearance: none;
+    }
+    .form-group select { padding-left: 46px; cursor: pointer; }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--smart-teal);
+      background: rgba(0, 199, 183, 0.05);
+      box-shadow: 0 0 0 4px rgba(0, 199, 183, 0.1);
+    }
+    .form-group input::placeholder { color: rgba(255, 255, 255, 0.2); }
+    .form-icon { position: absolute; left: 18px; top: 41px; color: var(--smart-teal); font-size: 18px; opacity: 0.8; z-index: 5; }
+    
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(135deg, var(--smart-teal) 0%, var(--cyan) 100%);
+      color: var(--deep-navy); padding: 16px; border-radius: 12px;
+      border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 199, 183, 0.3);
+      margin-top: 10px;
+    }
+    .btn-login:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 199, 183, 0.4); }
+
+    .signup-link { text-align: center; font-size: 14px; color: var(--soft-text); margin-top: 32px; }
+    .signup-link a { color: var(--cyan); font-weight: 600; text-decoration: none; transition: color 0.3s; }
+    .signup-link a:hover { color: var(--white); text-decoration: underline; }
+    
+    .alert {
+      font-size: 14px; text-align: center; margin-bottom: 24px; padding: 12px; border-radius: 12px;
+    }
+    .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; }
+  </style>
+</head>
+<body>
+
+<div class="split-layout">
+  
+  <div class="auth-image">
+    <div class="image-text">
+      <h2>Join the Future.</h2>
+      <p>Register today and gain access to advanced city-wide analytics, algorithm visualizers, and infrastructure controls.</p>
+    </div>
+  </div>
+
+  <div class="auth-content">
+    <a href="/" class="back-arrow" title="Back to Home"><i class="bi bi-arrow-left"></i></a>
+    
+    <div class="login-form-container">
+      <div class="brand">
+        <i class="bi bi-buildings-fill"></i>
+        <h1>SmartCityX</h1>
+      </div>
+
+      <div class="welcome-text">
+        <h2>Create an Account</h2>
+        <p>Register as a new user in the platform</p>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">
+        Registration failed.
+      </div>
+      <div th:if="${param.error} and ${error == null}" class="alert alert-error">
+        Registration failed. User may already exist.
+      </div>
+
+      <form method="post" th:action="@{/signup}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <i class="bi bi-person-badge form-icon"></i>
+          <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <i class="bi bi-envelope form-icon"></i>
+          <input type="email" id="email" name="email" placeholder="Enter your email address" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <i class="bi bi-lock form-icon"></i>
+          <input type="password" id="password" name="password" placeholder="Create a strong password" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="role">Role</label>
+          <i class="bi bi-shield-check form-icon"></i>
+          <select id="role" name="role" required>
+            <option value="CITIZEN" style="color: black;">Citizen</option>
+            <option value="STAFF" style="color: black;">Staff</option>
+            <option value="ADMIN" style="color: black;">Admin</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-login">Create Account</button>
+      </form>
+
+      <div class="signup-link">
+        Already have an account? <a href="/login">Login here</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Resource Form | SmartCityX', 'Add resource')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('resources')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('City Resource', 'Add or update city resource')}"></div>
+    <div class="page-content" style="max-width:600px;">
+      <div class="card-glass">
+        <div class="section-header mb-4">
+          <div class="section-title"><i class="bi bi-boxes"></i>
+            <span th:text="${resource.id != null} ? 'Edit Resource' : 'New Resource'">Form</span>
+          </div>
+          <a href="/resources" class="btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+        <form th:action="${resource.id != null} ? '/resources/'+${resource.id} : '/resources'" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-smart">Name *</label>
+              <input type="text" name="name" class="form-control-smart" required th:value="${resource.name}" placeholder="e.g. Ambulance Unit Alpha"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-smart">Type *</label>
+              <select name="resourceType" class="form-control-smart" required>
+                <option th:each="t : ${resourceTypes}" th:value="${t}" th:text="${t}" th:selected="${resource.resourceType == t}"></option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-smart">Zone *</label>
+              <input type="text" name="zone" class="form-control-smart" required th:value="${resource.zone}" placeholder="e.g. Zone A"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-smart">Total Capacity *</label>
+              <input type="number" name="totalCapacity" class="form-control-smart" required th:value="${resource.totalCapacity}" min="1"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-smart">Available Capacity *</label>
+              <input type="number" name="availableCapacity" class="form-control-smart" required th:value="${resource.availableCapacity}" min="0"/>
+            </div>
+            <div class="col-12">
+              <label class="form-label-smart">Description</label>
+              <textarea name="description" class="form-control-smart" rows="3" th:text="${resource.description}"></textarea>
+            </div>
+            <div class="col-12 mt-2" style="display:flex;gap:12px;">
+              <button type="submit" class="btn-primary-smart"><i class="bi bi-save"></i> Save Resource</button>
+              <a href="/resources" class="btn-ghost">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

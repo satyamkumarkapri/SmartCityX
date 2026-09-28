@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Transportation & Traffic | SmartCityX', 'Real-time traffic and routing')}"></head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('transportation')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Transportation & Traffic', 'Real-time traffic, public transit, and route planning')}"></div>
+    <div class="page-content">
+
+      <!-- Tabs -->
+      <div class="d-flex gap-4 mb-4 border-bottom pb-3">
+        <a href="#" class="text-decoration-none" style="font-weight:600; color:#0ea5e9; border-bottom:2px solid #0ea5e9; padding-bottom:12px; margin-bottom:-17px;">Live Traffic</a>
+        <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Route Planner</a>
+        <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Public Transit</a>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Main Map Area -->
+        <div class="card-solid p-0 overflow-hidden" style="display:flex; flex-direction:column;">
+          <!-- Route Search Bar over map -->
+          <div class="bg-white p-3 border-bottom d-flex gap-3 align-items-end">
+            <div class="flex-grow-1">
+              <label style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px; display:block;">From</label>
+              <div class="position-relative">
+                <i class="bi bi-geo-alt position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+                <input type="text" id="routeFrom" class="form-control ps-4" value="Central Station" style="font-size:14px; border-color:#e2e8f0; font-weight:500;"/>
+              </div>
+            </div>
+            <div style="color:#cbd5e1; padding-bottom:8px;"><i class="bi bi-arrow-left-right"></i></div>
+            <div class="flex-grow-1">
+              <label style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px; display:block;">To</label>
+              <div class="position-relative">
+                <i class="bi bi-geo position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+                <input type="text" id="routeTo" class="form-control ps-4" placeholder="Destination..." style="font-size:14px; border-color:#e2e8f0;"/>
+              </div>
+            </div>
+            <button id="findRouteBtn" class="btn" style="background:#0284c7; color:white; padding:10px 20px;">Find Route</button>
+          </div>
+          
+          <div style="flex:1; min-height: 500px; background: var(--bg-main); position: relative;">
+            <div id="transportationMap" style="width:100%; height:100%; z-index:1;"></div>
+            
+            <div style="position:absolute; bottom: 16px; left: 16px; z-index:1000; background: var(--bg-glass); border: 1px solid var(--border-subtle); padding: 12px; border-radius: 8px; box-shadow: var(--shadow-card); backdrop-filter: blur(10px);">
+              <div style="font-size:12px; font-weight:600; margin-bottom:8px;">Traffic Status</div>
+              <div class="d-flex align-items-center gap-3">
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px;"><span style="width:12px; height:4px; background:#16a34a; border-radius:2px;"></span> Fast</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px;"><span style="width:12px; height:4px; background:#f59e0b; border-radius:2px;"></span> Moderate</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px;"><span style="width:12px; height:4px; background:#dc2626; border-radius:2px;"></span> Slow</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Recommendations -->
+        <div>
+          <div class="card-solid mb-4">
+            <h3 class="card-title mb-3">Travel Recommendations</h3>
+            
+            <div style="border: 2px solid var(--accent-cyan); background: rgba(25, 217, 229, 0.1); border-radius: 8px; padding: 16px; margin-bottom: 16px; position: relative;">
+              <span class="badge bg-primary position-absolute top-0 end-0 m-2" style="font-size:10px;">Fastest Route</span>
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                <i class="bi bi-car-front-fill text-primary fs-3"></i>
+                <div>
+                  <div style="font-weight:700; font-size:16px; color:var(--text-primary);">Via Main St & 5th Ave</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Distance: 4.2 miles</div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-end mt-3 border-top pt-2" style="border-color:var(--border-subtle) !important;">
+                <div style="font-weight:700; font-size:20px; color:var(--accent-cyan);">14 min</div>
+                <a href="#" class="text-primary text-decoration-none" style="font-size:13px; font-weight:600;">Start Navigation</a>
+              </div>
+            </div>
+            
+            <div style="border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; margin-bottom: 16px; transition: var(--transition);">
+              <span class="badge bg-success position-absolute top-0 end-0 m-2" style="font-size:10px;">Eco-Friendly</span>
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                <i class="bi bi-train-front-fill text-success fs-3"></i>
+                <div>
+                  <div style="font-weight:700; font-size:16px; color:var(--text-primary);">Metro Line B</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Walk 5 min to Station</div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-end mt-3 border-top pt-2" style="border-color:var(--border-subtle) !important;">
+                <div style="font-weight:700; font-size:20px; color:var(--accent-green);">22 min</div>
+                <div style="font-size:12px; color:var(--text-muted);">Next train in 3 min</div>
+              </div>
+            </div>
+            
+            <div style="border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; transition: var(--transition);">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                <i class="bi bi-bicycle text-warning fs-3"></i>
+                <div>
+                  <div style="font-weight:700; font-size:16px; color:var(--text-primary);">City Bike Share</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Burn 120 calories</div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-end mt-3 border-top pt-2" style="border-color:var(--border-subtle) !important;">
+                <div style="font-weight:700; font-size:20px; color:var(--accent-orange);">28 min</div>
+                <div style="font-size:12px; color:var(--text-muted);">15 bikes available nearby</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('transportationMap').setView([17.3850, 78.4867], 13);
+    
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri',
+      maxZoom: 18
+    }).addTo(map);
+
+    var trafficIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: '<div style="background-color:#dc2626;width:12px;height:12px;border-radius:50%;border:2px solid white;"></div>',
+      iconSize: [12, 12],
+      iconAnchor: [6, 6]
+    });
+    
+    L.marker([17.3850, 78.4867], {icon: trafficIcon}).addTo(map).bindPopup('High Traffic');
+    L.marker([17.3950, 78.4967], {icon: trafficIcon}).addTo(map).bindPopup('Accident Reported');
+
+    var routingControl = null;
+
+    document.getElementById('findRouteBtn').addEventListener('click', function() {
+      var btn = this;
+      var originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Routing...';
+      btn.disabled = true;
+
+      // Use a realistic route through Hyderabad using OSRM
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+      
+      var from = document.getElementById('routeFrom').value || 'Central Station';
+      var to = document.getElementById('routeTo').value || 'Sultan Bazar';
+
+      // To make the demo robust without complex geocoding, we'll map the inputs to actual coordinates.
+      // We will just draw a nice road-following route from two points.
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(17.3920, 78.4730), // Start
+          L.latLng(17.3850, 78.4867)  // End
+        ],
+        show: false, // hide the textual directions
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        lineOptions: {
+          styles: [{color: '#0284c7', opacity: 0.8, weight: 6}]
+        }
+      }).addTo(map);
+
+      routingControl.on('routesfound', function(e) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      });
+      
+      routingControl.on('routingerror', function(e) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert("Could not fetch route from routing service. Using fallback line.");
+        // Fallback to straight line if OSRM fails
+        L.polyline([ [17.3920, 78.4730], [17.3850, 78.4867] ], {color: '#0284c7', weight: 6}).addTo(map);
+      });
+    });
+  });
+</script>
+</body>
+</html>

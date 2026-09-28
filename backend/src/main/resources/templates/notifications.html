@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Notifications & Alerts | SmartCityX', 'System Alerts')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('notifications')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Notifications', 'Live emergency broadcasts and system alerts')}"></div>
+    <div class="page-content">
+      <div class="card-solid" style="max-width: 800px; margin: 0 auto;">
+        <h3 class="card-title mb-4">Alert Timeline</h3>
+        
+        <div th:if="${#lists.isEmpty(emergencies)}" style="text-align:center;padding:40px;color:var(--text-muted);">
+          <i class="bi bi-bell-slash" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+          No active alerts.
+        </div>
+        
+        <div class="d-flex flex-column gap-3" th:unless="${#lists.isEmpty(emergencies)}">
+          <div th:each="alert : ${emergencies}" class="p-3" style="border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-card); display:flex; gap: 16px; align-items:flex-start;">
+            
+            <div style="width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;" 
+                 th:styleappend="${alert.severity.name() == 'CRITICAL' ? 'background:rgba(220,38,38,0.1);color:#dc2626;' : (alert.severity.name() == 'HIGH' ? 'background:rgba(245,158,11,0.1);color:#f59e0b;' : 'background:rgba(59,130,246,0.1);color:#3b82f6;')}">
+              <i class="bi" th:classappend="${alert.severity.name() == 'CRITICAL' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'}"></i>
+            </div>
+            
+            <div style="flex:1;">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h5 style="margin:0; font-size:16px; font-weight:600; color:var(--text-primary);" th:text="${alert.title}"></h5>
+                <span style="font-size:12px; font-family:'Fira Code', monospace; color:var(--text-muted);" th:text="${#temporals.format(alert.reportedAt, 'HH:mm - dd MMM')}"></span>
+              </div>
+              <p style="margin:0 0 8px; font-size:14px; color:var(--text-secondary);" th:text="${alert.description}"></p>
+              <div class="d-flex gap-2">
+                <span class="badge" style="font-size:10px; background:var(--bg-main); border:1px solid var(--border-subtle); color:var(--text-muted);" th:text="${alert.emergencyType}"></span>
+                <span class="badge" style="font-size:10px; background:var(--bg-main); border:1px solid var(--border-subtle); color:var(--text-muted);" th:text="'Location: ' + ${alert.location}"></span>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

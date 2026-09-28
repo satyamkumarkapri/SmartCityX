@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Water & Energy | SmartCityX', 'Water & Energy Management')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('water-energy')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Water & Energy Resources', 'Monitor city-wide water distribution and energy grids')}"></div>
+    <div class="page-content">
+      <div class="card-solid">
+        <h3 class="card-title mb-4">City Resources Status</h3>
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th>Resource Name</th>
+                <th>Type</th>
+                <th>Zone</th>
+                <th>Total Capacity</th>
+                <th>Available</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="resource : ${resources}" th:if="${resource.resourceType.name() == 'WATER_TANKER' or resource.resourceType.name() == 'WATER_SUPPLY' or resource.resourceType.name() == 'ELECTRICITY_UNIT'}">
+                <td style="font-weight:600; color:var(--text-primary);" th:text="${resource.name}"></td>
+                <td><span class="badge" style="background:rgba(25, 217, 229, 0.1); color:var(--accent-cyan); border:1px solid var(--accent-cyan);" th:text="${resource.resourceType}"></span></td>
+                <td th:text="${resource.zone}"></td>
+                <td style="font-family:'Fira Code', monospace; font-size:14px;" th:text="${resource.totalCapacity}"></td>
+                <td style="font-family:'Fira Code', monospace; font-size:14px; font-weight:600; color:var(--accent-green);" th:text="${resource.availableCapacity}"></td>
+                <td>
+                  <span class="badge badge-success" th:if="${resource.availableCapacity > 0}">Available</span>
+                  <span class="badge badge-danger" th:if="${resource.availableCapacity == 0}">Depleted</span>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(resources)}">
+                <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-droplet" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No water or energy resources registered.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Settings | SmartCityX', 'Platform Settings')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('settings')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Settings', 'Manage your account and platform preferences')}"></div>
+    <div class="page-content">
+      <div class="card-solid" style="max-width: 600px; margin: 0 auto;">
+        <h3 class="card-title mb-4">User Profile</h3>
+        
+        <div th:if="${userProfile == null}" style="text-align:center;padding:40px;color:var(--text-muted);">
+          <i class="bi bi-person-x" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+          Profile data not available.
+        </div>
+        
+        <div th:if="${param.success}" class="alert alert-success" style="background:rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 12px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
+          Profile updated successfully!
+        </div>
+        
+        <form th:if="${userProfile != null}" method="post" th:action="@{/settings}">
+          <div class="mb-3">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Full Name</label>
+            <input type="text" class="form-control" name="fullName" style="background:var(--bg-main); border-color:var(--border-subtle); color:var(--text-primary);" th:value="${userProfile.fullName}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Username</label>
+            <input type="text" class="form-control" style="background:var(--bg-main); border-color:var(--border-subtle); color:var(--text-primary);" th:value="${userProfile.username}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Email Address</label>
+            <input type="email" class="form-control" style="background:var(--bg-main); border-color:var(--border-subtle); color:var(--text-primary);" th:value="${userProfile.email}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Phone Number</label>
+            <input type="text" class="form-control" name="phoneNumber" style="background:var(--bg-main); border-color:var(--border-subtle); color:var(--text-primary);" th:value="${userProfile.phoneNumber}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Address</label>
+            <input type="text" class="form-control" name="address" style="background:var(--bg-main); border-color:var(--border-subtle); color:var(--text-primary);" th:value="${userProfile.address}">
+          </div>
+          <div class="mb-4">
+            <label class="form-label" style="color:var(--text-secondary); font-size:14px;">Roles</label>
+            <div>
+              <span th:each="role : ${userProfile.roles}" class="badge" style="background:rgba(25, 217, 229, 0.1); color:var(--accent-cyan); border:1px solid var(--accent-cyan); margin-right: 4px;" th:text="${role.name}"></span>
+            </div>
+          </div>
+          
+          <hr style="border-color:var(--border-subtle); margin:24px 0;">
+          
+          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">System Preferences</h4>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="darkModeSwitch" checked disabled>
+            <label class="form-check-label" for="darkModeSwitch" style="color:var(--text-secondary);">Dark Mode Theme</label>
+          </div>
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" id="emailNotifSwitch" checked disabled>
+            <label class="form-check-label" for="emailNotifSwitch" style="color:var(--text-secondary);">Email Notifications</label>
+          </div>
+          
+          <button type="submit" class="btn btn-primary-smart w-100">Save Preferences</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('City Resources | SmartCityX', 'Resource management')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('resources')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('City Resources', 'Manage and monitor city resource allocation')}"></div>
+    <div class="page-content">
+
+      <div th:if="${success}" class="alert-smart alert-success mb-4">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+      </div>
+
+      <div class="section-header mb-3">
+        <div class="section-title"><i class="bi bi-boxes"></i> Resource Inventory</div>
+        <a href="/resources/new" class="btn-primary-smart"><i class="bi bi-plus-circle"></i> Add Resource</a>
+      </div>
+
+      <div class="grid-4 mb-4">
+        <div th:each="res : ${resources}" class="card-glass">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div style="font-size:24px;">
+              <span th:switch="${res.resourceType.name()}">
+                <span th:case="'AMBULANCE'">🚑</span>
+                <span th:case="'WATER_TANKER'">🚒</span>
+                <span th:case="'TRAFFIC_UNIT'">🚦</span>
+                <span th:case="'EMERGENCY_TEAM'">🦺</span>
+                <span th:case="'ELECTRICITY_UNIT'">⚡</span>
+                <span th:case="'WATER_SUPPLY'">💧</span>
+                <span th:case="'FIRE_TRUCK'">🔥</span>
+                <span th:case="*">🏗️</span>
+              </span>
+            </div>
+            <span class="badge-status" th:classappend="${res.availableCapacity > 0} ? 'badge-resolved' : 'badge-closed'"
+                  th:text="${res.availableCapacity > 0} ? 'Available' : 'Depleted'"></span>
+          </div>
+
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px;" th:text="${res.name}"></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;" th:text="${res.resourceType}+' · '+${res.zone}"></div>
+
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
+            <span>Capacity</span>
+            <span style="font-weight:600;" th:text="${res.availableCapacity}+' / '+${res.totalCapacity}"></span>
+          </div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill"
+                 th:classappend="${res.utilizationPercent > 80} ? 'red' : (${res.utilizationPercent > 50} ? 'orange' : 'green')"
+                 th:style="'width:'+${res.utilizationPercent}+'%'"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" th:text="${res.utilizationPercent}+'% utilized'"></div>
+
+          <div style="display:flex;gap:6px;margin-top:12px;">
+            <a th:href="@{/resources/{id}/edit(id=${res.id})}" class="btn-edit-smart" style="flex:1;justify-content:center;font-size:12px;">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+            <form th:action="@{/resources/{id}/delete(id=${res.id})}" method="post" onsubmit="return confirm('Delete?')">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button class="btn-danger-smart" style="padding:6px 10px;font-size:12px;"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

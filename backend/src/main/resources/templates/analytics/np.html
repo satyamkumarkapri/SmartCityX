@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('NP-Complete | SmartCityX', 'M5 NP-completeness')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('np')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M5 – NP-Completeness & Approximations', 'Vertex Cover · Clique · Independent Set · 3-SAT Reductions')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showNPTab('vc')">Vertex Cover</button>
+        <button class="module-tab" onclick="showNPTab('clique')">Max Clique</button>
+        <button class="module-tab" onclick="showNPTab('is')">Independent Set</button>
+        <button class="module-tab" onclick="showNPTab('theory')">NP Reductions</button>
+      </div>
+
+      <!-- Common graph input -->
+      <div class="card-glass mb-4" id="graph-input-section">
+        <div class="section-title mb-3"><i class="bi bi-hexagon"></i> Graph Input</div>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label-smart">Number of Nodes (n)</label>
+            <input type="number" id="np-n" class="form-control-smart" value="6" min="2" max="10"/>
+          </div>
+          <div class="col-md-9">
+            <label class="form-label-smart">Edges (from to, one per line)</label>
+            <textarea id="np-edges" class="form-control-smart" rows="4">0 1
+0 2
+1 2
+1 3
+2 4
+3 4
+4 5
+3 5</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vertex Cover Tab -->
+      <div id="tab-vc">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3">Vertex Cover (2-Approximation)</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            A vertex cover is a set S of vertices such that every edge has at least one endpoint in S.
+            Minimum Vertex Cover is NP-Complete; the 2-Approximation runs in O(E).
+            <strong style="color:var(--accent-cyan);">City context:</strong> Minimum set of intersections to monitor for full traffic coverage.
+          </p>
+          <button class="btn-primary-smart" onclick="runVC()"><i class="bi bi-play-fill"></i> Find 2-Approx Vertex Cover</button>
+        </div>
+        <div id="vc-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Cover Size</div><div class="result-value" id="vc-size">-</div></div>
+            <div><div class="result-label">Approximation Ratio</div><div style="font-size:20px;font-weight:700;color:var(--accent-orange);" id="vc-ratio">-</div></div>
+            <div><div class="result-label">Time</div><div class="result-value" id="vc-time">-</div></div>
+          </div>
+          <div class="result-label mb-2">Nodes in Cover</div>
+          <div class="array-display" id="vc-nodes"></div>
+        </div>
+      </div>
+
+      <!-- Clique Tab -->
+      <div id="tab-clique" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3">Maximum Clique</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            A clique is a subset of vertices where every pair is connected.
+            Max Clique is NP-Complete (3-SAT reduces to Clique).
+            <strong style="color:var(--accent-cyan);">City context:</strong> Find maximum group of zones with mutual emergency communication links.
+          </p>
+          <button class="btn-primary-smart" onclick="runClique()"><i class="bi bi-play-fill"></i> Find Max Clique</button>
+        </div>
+        <div id="clique-result" class="algo-result">
+          <div class="mb-4"><div class="result-label">Clique Size</div><div class="result-value" id="clique-size">-</div></div>
+          <div class="result-label mb-2">Clique Nodes</div>
+          <div class="array-display" id="clique-nodes"></div>
+        </div>
+      </div>
+
+      <!-- Independent Set Tab -->
+      <div id="tab-is" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3">Maximum Independent Set</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            An independent set is a subset of vertices with no edges between them.
+            Complement of a Clique. NP-Complete.
+            <strong style="color:var(--accent-cyan);">City context:</strong> Maximum set of non-adjacent traffic monitoring nodes.
+          </p>
+          <button class="btn-primary-smart" onclick="runIS()"><i class="bi bi-play-fill"></i> Find Max Independent Set</button>
+        </div>
+        <div id="is-result" class="algo-result">
+          <div class="mb-4"><div class="result-label">Independent Set Size</div><div class="result-value" id="is-size">-</div></div>
+          <div class="result-label mb-2">Independent Set Nodes</div>
+          <div class="array-display" id="is-nodes"></div>
+        </div>
+      </div>
+
+      <!-- Theory Tab -->
+      <div id="tab-theory" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-diagram-2"></i> NP-Complete Reduction Chain</div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:24px;font-family:monospace;line-height:2.5;font-size:14px;">
+            <span style="color:var(--accent-red);">3-SAT</span>
+            <span style="color:var(--text-muted);"> ≤_p </span>
+            <span style="color:var(--accent-orange);">CLIQUE</span>
+            <span style="color:var(--text-muted);"> ≤_p </span>
+            <span style="color:var(--accent-green);">INDEPENDENT SET</span>
+            <span style="color:var(--text-muted);"> ≤_p </span>
+            <span style="color:var(--accent-cyan);">VERTEX COVER</span>
+          </div>
+
+          <div class="grid-2 mt-4">
+            <div>
+              <div style="color:var(--accent-orange);font-weight:600;margin-bottom:8px;">3-SAT → CLIQUE</div>
+              <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                For a 3-SAT formula with k clauses, create a graph with k groups of vertices (one per clause).
+                Connect u,v if they are in different clauses and the literals are not complementary.
+                The formula is satisfiable iff there's a k-clique.
+              </p>
+            </div>
+            <div>
+              <div style="color:var(--accent-green);font-weight:600;margin-bottom:8px;">CLIQUE → INDEPENDENT SET</div>
+              <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                S is a k-clique in G iff S is a k-independent set in the complement graph G̅.
+                Simply negate all edges: edges become non-edges and vice versa.
+              </p>
+            </div>
+            <div>
+              <div style="color:var(--accent-cyan);font-weight:600;margin-bottom:8px;">INDEPENDENT SET → VERTEX COVER</div>
+              <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                S is an independent set iff V \ S is a vertex cover.
+                The vertex cover consists of all nodes NOT in the independent set.
+              </p>
+            </div>
+            <div>
+              <div style="color:var(--accent-purple);font-weight:600;margin-bottom:8px;">2-Approximation for Vertex Cover</div>
+              <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                Greedily pick maximal matchings and include both endpoints.
+                Guaranteed to be at most 2× optimal.
+                OPT ≤ ALG ≤ 2 × OPT.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showNPTab(tab) {
+  ['vc','clique','is','theory'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.toggle('active', (['vc','clique','is','theory'][i]) === tab);
+  });
+  document.getElementById('graph-input-section').style.display = tab !== 'theory' ? 'block' : 'none';
+}
+
+function getGraphInput() {
+  const n = parseInt(document.getElementById('np-n').value);
+  const edgesText = document.getElementById('np-edges').value.trim();
+  const edges = edgesText.split('\n').map(l => {
+    const parts = l.trim().split(/\s+/);
+    return [parseInt(parts[0]), parseInt(parts[1])];
+  }).filter(e => !isNaN(e[0]) && !isNaN(e[1]));
+  return {n, edges};
+}
+
+async function runVC() {
+  const {n, edges} = getGraphInput();
+  const res = await fetch('/api/algorithms/vertex-cover', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({n, edges})
+  });
+  const data = await res.json();
+  document.getElementById('vc-size').textContent = data.coverSize;
+  document.getElementById('vc-ratio').textContent = data.approximationRatio + '× approx';
+  document.getElementById('vc-time').textContent = data.executionTimeMs + 'ms';
+  document.getElementById('vc-nodes').innerHTML = data.coverNodes.map(v=>`<span class="array-cell highlight">Node ${v}</span>`).join('');
+  document.getElementById('vc-result').classList.add('show');
+}
+
+async function runClique() {
+  const {n, edges} = getGraphInput();
+  const res = await fetch('/api/algorithms/clique', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({n, edges})
+  });
+  const data = await res.json();
+  document.getElementById('clique-size').textContent = data.cliqueSize;
+  document.getElementById('clique-nodes').innerHTML = data.cliqueNodes.map(v=>`<span class="array-cell highlight">Node ${v}</span>`).join('');
+  document.getElementById('clique-result').classList.add('show');
+}
+
+async function runIS() {
+  const {n, edges} = getGraphInput();
+  // Use vertex cover complement
+  const res = await fetch('/api/algorithms/vertex-cover', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({n, edges})
+  });
+  const vcData = await res.json();
+  const vcSet = new Set(vcData.coverNodes);
+  const isNodes = [];
+  for (let i = 0; i < n; i++) if (!vcSet.has(i)) isNodes.push(i);
+  document.getElementById('is-size').textContent = isNodes.length;
+  document.getElementById('is-nodes').innerHTML = isNodes.map(v=>`<span class="array-cell highlight">Node ${v}</span>`).join('');
+  document.getElementById('is-result').classList.add('show');
+}
+</script>
+</body>
+</html>

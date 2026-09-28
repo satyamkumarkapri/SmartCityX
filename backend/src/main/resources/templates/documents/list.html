@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Documents | SmartCityX', 'City document management')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('documents')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('City Documents', 'Access public policies, budgets, and city planning blueprints')}"></div>
+    <div class="page-content">
+      
+      <div th:if="${success}" class="alert alert-success mb-4 d-flex align-items-center gap-2" style="background:#dcfce7; border:1px solid #16a34a; color:#16a34a; padding:12px; border-radius:8px;">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+      </div>
+
+      <div class="card-solid">
+        <!-- Top Toolbar with Tabs and New Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+          <div class="d-flex gap-4">
+            <a href="/documents" class="text-decoration-none" style="font-weight:600; color:#0ea5e9; border-bottom:2px solid #0ea5e9; padding-bottom:12px; margin-bottom:-17px;">All Documents</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Policies</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Blueprints</a>
+            <a href="#" class="text-decoration-none text-muted" style="font-weight:500;">Budgets</a>
+          </div>
+          <a href="/documents/new" class="btn" style="background:#14b8a6; color:white;"><i class="bi bi-upload"></i> Upload Document</a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded">
+          <form method="get" action="/documents" class="d-flex gap-3 align-items-center flex-grow-1 me-4">
+            <div class="position-relative flex-grow-1" style="max-width:340px;">
+              <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+              <input type="text" name="search" class="form-control ps-4" placeholder="Search document name, type, or author..." th:value="${search}" style="font-size:13px; border-color:#e2e8f0;"/>
+            </div>
+            
+            <button type="submit" class="btn" style="background:white; border:1px solid #e2e8f0; color:#0f172a; padding:8px 16px; font-size:13px;">Filter <i class="bi bi-funnel"></i></button>
+          </form>
+          <div class="text-muted" style="font-size:13px;">Sort by: <strong>Newest First</strong> <i class="bi bi-chevron-down ms-1"></i></div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper border-0 shadow-none">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Document Name</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Department</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Size</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Upload Date</th>
+                <th style="background:white; border-bottom:2px solid #f1f5f9; color:#94a3b8;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="doc : ${documents}">
+                <td>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:36px; height:36px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#dc2626; font-size:18px;">
+                      <i class="bi bi-file-earmark-pdf-fill"></i>
+                    </div>
+                    <div>
+                      <div style="color:#0f172a; font-weight:600; font-size:14px;" th:text="${doc.title}"></div>
+                      <div style="color:#64748b; font-size:12px; font-family:monospace;" th:text="${doc.documentType}"></div>
+                    </div>
+                  </div>
+                </td>
+                <td style="color:#475569; font-size:13px;" th:text="${doc.department}"></td>
+                <td style="color:#64748b; font-size:13px;">2.4 MB</td> <!-- Dummy size -->
+                <td style="color:#64748b; font-size:13px;">10 Sep 2025</td> <!-- Dummy date for design -->
+                <td>
+                  <div style="display:flex; gap:12px; align-items:center;">
+                    <a th:href="@{/documents/{id}(id=${doc.id})}" style="color:#0ea5e9; font-size:16px;" title="View"><i class="bi bi-eye"></i></a>
+                    <a th:href="@{/documents/{id}/edit(id=${doc.id})}" style="color:#64748b; font-size:16px;" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                    <form th:action="@{/documents/{id}/delete(id=${doc.id})}" method="post" style="display:inline;" onsubmit="return confirm('Delete this document?')">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <button type="submit" style="background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer;" title="Delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(documents)}">
+                <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                  <i class="bi bi-folder2-open" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+                  No documents found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

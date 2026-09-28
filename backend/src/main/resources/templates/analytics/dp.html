@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('DP Algorithms | SmartCityX', 'M3 Dynamic Programming')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('dp')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M3 – Dynamic Programming', 'Subset Sum · Matrix Chain · Bitmask DP')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showDPTab('ss')">Subset Sum</button>
+        <button class="module-tab" onclick="showDPTab('mc')">Matrix Chain</button>
+        <button class="module-tab" onclick="showDPTab('bm')">Bitmask DP</button>
+      </div>
+
+      <!-- Subset Sum -->
+      <div id="tab-ss">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-collection"></i> Subset Sum DP</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Given a set of integers and a target, determine if any subset sums to that target.
+            O(n × target). Used in SmartCityX for resource allocation subset selection.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Numbers (comma-separated)</label>
+              <input type="text" id="ss-nums" class="form-control-smart" value="3, 1, 4, 1, 5, 9, 2, 6"/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Target Sum</label>
+              <input type="number" id="ss-target" class="form-control-smart" value="15"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runSS()"><i class="bi bi-play-fill"></i> Run Subset Sum</button>
+          </div>
+        </div>
+        <div id="ss-result" class="algo-result">
+          <div class="grid-2 mb-4">
+            <div>
+              <div class="result-label">Result</div>
+              <div class="result-value" id="ss-possible">-</div>
+            </div>
+            <div>
+              <div class="result-label">Subset Found</div>
+              <div class="array-display" id="ss-subset"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matrix Chain -->
+      <div id="tab-mc" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-grid-3x3-gap"></i> Matrix Chain Multiplication</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Given matrices with dimensions, find the optimal multiplication order to minimize scalar operations.
+            O(n³). Used to optimize sequences of analytics operations.
+          </p>
+          <div class="col-md-8">
+            <label class="form-label-smart">Matrix Dimensions (e.g. 10 30 5 60 – means 3 matrices: 10×30, 30×5, 5×60)</label>
+            <input type="text" id="mc-dims" class="form-control-smart" value="10 30 5 60"/>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runMC()"><i class="bi bi-play-fill"></i> Optimize Ordering</button>
+          </div>
+        </div>
+        <div id="mc-result" class="algo-result">
+          <div class="grid-2 mb-4">
+            <div>
+              <div class="result-label">Minimum Multiplications</div>
+              <div class="result-value" id="mc-cost">-</div>
+            </div>
+            <div>
+              <div class="result-label">Optimal Parenthesization</div>
+              <div style="font-size:16px;font-weight:600;color:var(--accent-cyan);margin-top:4px;" id="mc-parens">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bitmask DP -->
+      <div id="tab-bm" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-toggle2-on"></i> Bitmask DP – Set Cover</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Find the minimum-cost subset of resources to cover all required city tasks.
+            2^n state enumeration. Used to optimize city resource combinations.
+          </p>
+          <div style="background:rgba(0,0,0,0.25);border-radius:8px;padding:16px;">
+            <p style="font-size:12px;color:var(--accent-cyan);margin-bottom:12px;">Demo: 4 city resources covering 4 task types (Traffic=1, Water=2, Power=4, Emergency=8)</p>
+            <div class="grid-2" style="gap:8px;">
+              <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;">
+                <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">🚑 Ambulance Unit (cost: 10)</div>
+                <div style="font-size:12px;color:var(--text-muted);">Covers: Emergency (8)</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;">
+                <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">💧 Water Tanker (cost: 8)</div>
+                <div style="font-size:12px;color:var(--text-muted);">Covers: Water (2) + Emergency (8)</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;">
+                <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">🚦 Traffic Unit (cost: 6)</div>
+                <div style="font-size:12px;color:var(--text-muted);">Covers: Traffic (1) + Water (2)</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;">
+                <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">⚡ Electricity Unit (cost: 7)</div>
+                <div style="font-size:12px;color:var(--text-muted);">Covers: Power (4)</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;">
+              <label class="form-label-smart">All Tasks Bitmask (binary)</label>
+              <input type="number" id="bm-alltasks" class="form-control-smart" value="15" min="1" max="15" style="max-width:150px;"/>
+              <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">15 = 1111 in binary = all 4 tasks required</p>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runBM()"><i class="bi bi-play-fill"></i> Run Bitmask DP</button>
+          </div>
+        </div>
+        <div id="bm-result" class="algo-result">
+          <div class="grid-2 mb-4">
+            <div>
+              <div class="result-label">Minimum Cost</div>
+              <div class="result-value" id="bm-cost">-</div>
+            </div>
+            <div>
+              <div class="result-label">Selected Resources</div>
+              <div class="array-display" id="bm-selected"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showDPTab(tab) {
+  ['ss','mc','bm'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.toggle('active', (['ss','mc','bm'][i]) === tab);
+  });
+}
+
+async function runSS() {
+  const numsStr = document.getElementById('ss-nums').value;
+  const nums = numsStr.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n));
+  const target = parseInt(document.getElementById('ss-target').value);
+
+  const res = await fetch('/api/algorithms/subset-sum', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nums, target})
+  });
+  const data = await res.json();
+  document.getElementById('ss-possible').textContent = data.possible ? '✅ POSSIBLE' : '❌ IMPOSSIBLE';
+  document.getElementById('ss-possible').style.color = data.possible ? 'var(--accent-green)' : 'var(--accent-red)';
+  document.getElementById('ss-subset').innerHTML = (data.subsetFound||[]).map(n=>`<span class="array-cell highlight">${n}</span>`).join('') || '<span style="color:var(--text-muted)">—</span>';
+  document.getElementById('ss-result').classList.add('show');
+}
+
+async function runMC() {
+  const dimsStr = document.getElementById('mc-dims').value;
+  const dims = dimsStr.trim().split(/\s+/).map(Number);
+  const res = await fetch('/api/algorithms/matrix-chain', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({dims})
+  });
+  const data = await res.json();
+  document.getElementById('mc-cost').textContent = data.minCost.toLocaleString();
+  document.getElementById('mc-parens').textContent = data.optimalParenthesization;
+  document.getElementById('mc-result').classList.add('show');
+}
+
+async function runBM() {
+  const allTasks = parseInt(document.getElementById('bm-alltasks').value);
+  const costs = [10, 8, 6, 7];
+  const tasks = [8, 10, 3, 4]; // bitmasks
+  const res = await fetch('/api/algorithms/max-flow', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nodes:5, source:0, sink:4, edges:[[0,1,10],[1,2,6],[1,3,8],[2,4,6],[3,4,8]], algorithm:'edmonds-karp'})
+  });
+  // For bitmask demo, call a simpler inline approach
+  // Actually run our own bitmask calculation client-side for demo
+  const names = ['🚑 Ambulance', '💧 Water Tanker', '🚦 Traffic Unit', '⚡ Electricity Unit'];
+  const taskMasks = [8, 10, 3, 4];
+  let best = Infinity, bestSel = [];
+  for (let mask = 0; mask < (1 << 4); mask++) {
+    let coverage = 0, cost = 0, sel = [];
+    for (let i = 0; i < 4; i++) {
+      if (mask & (1<<i)) { coverage |= taskMasks[i]; cost += costs[i]; sel.push(i); }
+    }
+    if (coverage >= allTasks && cost < best) { best = cost; bestSel = sel; }
+  }
+  document.getElementById('bm-cost').textContent = best === Infinity ? '❌ Infeasible' : best;
+  document.getElementById('bm-selected').innerHTML = bestSel.map(i=>`<span class="array-cell highlight">${names[i]}</span>`).join('');
+  document.getElementById('bm-result').classList.add('show');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Service Request Form | SmartCityX', 'Create or edit request')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('requests')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Service Request', 'Create / Edit City Service Request')}"></div>
+    <div class="page-content" style="max-width:720px;">
+
+      <div class="card-glass">
+        <div class="section-header mb-4">
+          <div class="section-title">
+            <i class="bi bi-clipboard2-plus"></i>
+            <span th:text="${mode == 'edit'} ? 'Edit Service Request #'+${request.id} : 'New Service Request'">Form</span>
+          </div>
+          <a href="/requests" class="btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+
+        <form th:action="${mode == 'edit'} ? '/requests/' + ${request.id} : '/requests'"
+              method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-smart">Title *</label>
+              <input type="text" name="title" class="form-control-smart"
+                     placeholder="Describe the issue briefly" required
+                     th:value="${request.title}"/>
+              <div th:if="${#fields.hasErrors('title')}" style="color:var(--accent-red);font-size:12px;margin-top:4px;" th:errors="*{title}"></div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-smart">Category *</label>
+              <select name="category" class="form-control-smart" required>
+                <option value="">Select category...</option>
+                <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"
+                        th:selected="${request.category == cat}"></option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-smart">Priority *</label>
+              <select name="priority" class="form-control-smart" required>
+                <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}"
+                        th:selected="${request.priority == p}"></option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-smart">Status</label>
+              <select name="status" class="form-control-smart">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${request.status == s}"></option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-smart">Location</label>
+              <input type="text" name="location" class="form-control-smart"
+                     placeholder="e.g. Zone A, Main Street"
+                     th:value="${request.location}"/>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-smart">Description</label>
+              <textarea name="description" class="form-control-smart" rows="4"
+                        placeholder="Detailed description of the issue..."
+                        th:text="${request.description}"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-smart">Assigned To</label>
+              <input type="text" name="assignedTo" class="form-control-smart"
+                     placeholder="Responsible team or person"
+                     th:value="${request.assignedTo}"/>
+            </div>
+
+            <div class="col-12 mt-2" style="display:flex;gap:12px;">
+              <button type="submit" class="btn-primary-smart">
+                <i class="bi bi-save"></i>
+                <span th:text="${mode == 'edit'} ? 'Update Request' : 'Create Request'">Save</span>
+              </button>
+              <a href="/requests" class="btn-ghost">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html>

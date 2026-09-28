@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Error | SmartCityX</title>
+  <!-- Load main CSS directly since base might be broken in an error state -->
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: #02060c;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .error-container {
+      background: rgba(16, 33, 56, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .error-icon {
+      font-size: 64px;
+      color: #ef4444;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      margin: 0 0 10px;
+      color: white;
+    }
+    p {
+      color: #a0aec0;
+      margin-bottom: 30px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .btn-home {
+      display: inline-block;
+      background: linear-gradient(135deg, #00c7b7, #19d9e5);
+      color: #02060c;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+    .btn-home:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 199, 183, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <i class="bi bi-exclamation-triangle-fill error-icon"></i>
+    <h1>Oops! Something went wrong.</h1>
+    <p>We encountered an unexpected error processing your request. Please try again later or return to the dashboard.</p>
+    <a href="/dashboard" class="btn-home">Return to Dashboard</a>
+  </div>
+</body>
+</html>

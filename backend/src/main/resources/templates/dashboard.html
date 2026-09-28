@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout/base :: head('Dashboard | SmartCityX', 'Home / Dashboard')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('dashboard')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('Welcome, ' + ${#authentication.name} + '!', 'Together for a Smarter, Greener City.')}"></div>
+
+    <div class="page-content">
+      
+      <!-- Date and Weather Header Override (Optional, placing it here to match mockup if header doesn't have it) -->
+      <div class="d-flex justify-content-end align-items-center mb-4" style="margin-top: -60px; position: relative; z-index: 1000; padding-right: 20px;">
+        <div class="user-greeting">
+          <div id="live-date" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Loading date...</div>
+          <div id="live-time" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">--:--</div>
+        </div>
+        <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded shadow-sm border">
+          <i class="bi bi-brightness-high-fill text-warning" style="font-size: 24px;"></i>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; line-height: 1;">28°C</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Clear</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Grid -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="bi bi-clipboard-data"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalRequests != null ? totalRequests : '1,248'}">1,248</div>
+            <div class="stat-label">Total Service Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="bi bi-file-earmark-text"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${openRequests != null ? openRequests : '36'}">36</div>
+            <div class="stat-label">Open Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${activeEmergencies != null ? activeEmergencies : '12'}">12</div>
+            <div class="stat-label text-red">Emergency Reports</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-router"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalSensors != null ? totalSensors + '+' : '500+'}">500+</div>
+            <div class="stat-label">IoT Sensors Online</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Main Column -->
+        <div>
+          <!-- Live Map Placeholder -->
+          <div class="card-solid mb-4">
+            <div class="card-header">
+              <h3 class="card-title">Live City Overview</h3>
+              <a href="#" class="card-action"><i class="bi bi-three-dots"></i></a>
+            </div>
+            <div style="height: 300px; background: #e2e8f0; border-radius: 8px; position: relative; overflow: hidden;">
+              <!-- Using an SVG or simple image to simulate the map in mockup -->
+              <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/78.4867,17.3850,12,0/800x300?access_token=pk.eyJ1IjoiZGVtbyIsImEiOiJjbGludndyd3MwNm5vM2Ztanp2b2J6YmI3In0.demo" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;" alt="City Map" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 800 300\'><rect width=\'800\' height=\'300\' fill=\'%230b1a2f\'/><text x=\'400\' y=\'150\' font-family=\'sans-serif\' font-size=\'20\' fill=\'%2300c7b7\' text-anchor=\'middle\'>SmartCity Map Active</text></svg>'"/>
+              
+              <!-- Map Legend -->
+              <div style="position:absolute; bottom: 16px; left: 16px; background: white; padding: 8px 12px; border-radius: 50px; display: flex; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: 500;">
+                <div style="display:flex; align-items:center; gap:6px;"><i class="bi bi-geo-alt-fill text-danger"></i> Traffic</div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="bi bi-geo-alt-fill text-primary"></i> Water</div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="bi bi-geo-alt-fill text-success"></i> Energy</div>
+                <div style="display:flex; align-items:center; gap:6px;"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Alert</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid-2">
+            <!-- Traffic Chart -->
+            <div class="card-solid">
+              <div class="card-header">
+                <h3 class="card-title">Traffic Congestion</h3>
+              </div>
+              <canvas id="trafficChart" height="200"></canvas>
+            </div>
+            
+            <!-- Resource Chart -->
+            <div class="card-solid">
+              <div class="card-header">
+                <h3 class="card-title">Water & Energy Usage</h3>
+              </div>
+              <canvas id="resourceChart" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Column -->
+        <div>
+          <!-- Quick Actions -->
+          <div class="card-solid mb-4">
+            <div class="card-header">
+              <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <a href="/requests/new" class="btn btn-outline" style="justify-content:space-between; padding: 12px 16px;">
+                <span style="display:flex; align-items:center; gap:12px; color:var(--text-primary);"><i class="bi bi-file-earmark-plus" style="background:#e0f2fe; color:#0284c7; padding:6px; border-radius:6px;"></i> Raise a Service Request</span>
+                <i class="bi bi-arrow-right text-muted"></i>
+              </a>
+              <a href="/emergencies/new" class="btn btn-outline" style="justify-content:space-between; padding: 12px 16px;">
+                <span style="display:flex; align-items:center; gap:12px; color:var(--text-primary);"><i class="bi bi-exclamation-triangle" style="background:#fee2e2; color:#dc2626; padding:6px; border-radius:6px;"></i> Report an Emergency</span>
+                <i class="bi bi-arrow-right text-muted"></i>
+              </a>
+              <a href="/documents" class="btn btn-outline" style="justify-content:space-between; padding: 12px 16px;">
+                <span style="display:flex; align-items:center; gap:12px; color:var(--text-primary);"><i class="bi bi-search" style="background:#dcfce7; color:#16a34a; padding:6px; border-radius:6px;"></i> Search City Documents</span>
+                <i class="bi bi-arrow-right text-muted"></i>
+              </a>
+              <a href="/sensors" class="btn btn-outline" style="justify-content:space-between; padding: 12px 16px;">
+                <span style="display:flex; align-items:center; gap:12px; color:var(--text-primary);"><i class="bi bi-activity" style="background:#cffafe; color:#0891b2; padding:6px; border-radius:6px;"></i> View Real-Time Data</span>
+                <i class="bi bi-arrow-right text-muted"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Recent Activities -->
+          <div class="card-solid">
+            <div class="card-header">
+              <h3 class="card-title">Recent Activities</h3>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              
+              <div th:each="req : ${recentRequests}" style="display:flex; gap:12px;">
+                <div style="width:32px; height:32px; background:#e0f2fe; color:#0284c7; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <i class="bi bi-journal-text"></i>
+                </div>
+                <div>
+                  <div style="font-size:13px; font-weight:600; color:var(--text-primary);" th:text="${req.title}">Service request</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" th:text="${#temporals.format(req.createdAt, 'dd MMM yyyy, HH:mm')}">time</div>
+                </div>
+              </div>
+
+              <div th:each="em : ${recentEmergencies}" style="display:flex; gap:12px;">
+                <div style="width:32px; height:32px; background:#fee2e2; color:#dc2626; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div>
+                  <div style="font-size:13px; font-weight:600; color:var(--text-primary);" th:text="${'Alert: ' + em.title}">Emergency alert</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" th:text="${#temporals.format(em.reportedAt, 'dd MMM yyyy, HH:mm')}">time</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.page-content -->
+  </main>
+</div>
+
+<div th:replace="~{layout/base :: scripts}"></div>
+
+<script>
+  function updateTime() {
+    const now = new Date();
+    
+    // Format date: e.g. "Thu, 11 Sep 2026"
+    const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options);
+    
+    // Format time: e.g. "23:15"
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    
+    const dateEl = document.getElementById('live-date');
+    const timeEl = document.getElementById('live-time');
+    
+    if(dateEl) dateEl.textContent = dateStr;
+    if(timeEl) timeEl.textContent = timeStr;
+  }
+  
+  // Update immediately and then every minute
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Fetch Chart Data
+  fetch('/api/dashboard/chart-data')
+    .then(res => res.json())
+    .then(data => {
+      // Traffic Chart
+      const trafficCtx = document.getElementById('trafficChart')?.getContext('2d');
+      if (trafficCtx) {
+        Chart.defaults.color = 'rgba(255,255,255,0.7)';
+        new Chart(trafficCtx, {
+          type: 'line',
+          data: {
+            labels: data.traffic.labels,
+            datasets: [
+              {
+                label: 'Current',
+                data: data.traffic.current,
+                borderColor: '#19d9e5',
+                backgroundColor: '#19d9e5',
+                tension: 0.4,
+                borderWidth: 2,
+                pointRadius: 3
+              },
+              {
+                label: 'Average',
+                data: data.traffic.average,
+                borderColor: '#a0aec0',
+                borderDash: [5, 5],
+                tension: 0.4,
+                borderWidth: 2,
+                pointRadius: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true, color: 'rgba(255,255,255,0.7)' } } },
+            scales: {
+              y: { beginAtZero: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(255,255,255,0.5)'} },
+              x: { border: {display: false}, grid: {display: false}, ticks: {color: 'rgba(255,255,255,0.5)'} }
+            }
+          }
+        });
+      }
+
+      // Resource Chart
+      const resourceCtx = document.getElementById('resourceChart')?.getContext('2d');
+      if (resourceCtx) {
+        new Chart(resourceCtx, {
+          type: 'bar',
+          data: {
+            labels: data.resource.labels,
+            datasets: [
+              {
+                label: 'Water (ML)',
+                data: data.resource.water,
+                backgroundColor: '#19d9e5',
+                borderRadius: 4
+              },
+              {
+                label: 'Energy (MWh)',
+                data: data.resource.energy,
+                backgroundColor: '#00c7b7',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true, color: 'rgba(255,255,255,0.7)' } } },
+            scales: {
+              y: { beginAtZero: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(255,255,255,0.5)'} },
+              x: { border: {display: false}, grid: {display: false}, ticks: {color: 'rgba(255,255,255,0.5)'} }
+            }
+          }
+        });
+      }
+    })
+    .catch(err => console.error("Error fetching chart data:", err));
+</script>
+</body>
+</html>

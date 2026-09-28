@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('String Search | SmartCityX', 'M1 String algorithms')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('string-search')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M1 – String Search Algorithms', 'KMP · Z-Function · Rabin-Karp · Aho-Corasick')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showTab('kmp')">KMP</button>
+        <button class="module-tab" onclick="showTab('z')">Z-Function</button>
+        <button class="module-tab" onclick="showTab('rk')">Rabin-Karp</button>
+        <button class="module-tab" onclick="showTab('ac')">Aho-Corasick</button>
+      </div>
+
+      <!-- KMP Tab -->
+      <div id="tab-kmp">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-search"></i> Knuth-Morris-Pratt (KMP)</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Searches for pattern in text in O(n+m) using a Longest Proper Prefix-Suffix (LPS) array to skip redundant comparisons.
+            Used in SmartCityX to search citizen reports and service request descriptions.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Text</label>
+              <textarea id="kmp-text" class="form-control-smart" rows="3" placeholder="Enter text to search in...">The water supply in Zone A is experiencing disruption due to a pipe burst near Zone B water distribution center</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Pattern</label>
+              <input type="text" id="kmp-pattern" class="form-control-smart" value="water" placeholder="Search pattern"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runKMP()">
+              <i class="bi bi-play-fill"></i> Run KMP
+              <span id="kmp-spin" class="spinner d-none"></span>
+            </button>
+          </div>
+        </div>
+
+        <div id="kmp-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div>
+              <div class="result-label">Matches Found</div>
+              <div class="result-value" id="kmp-count">-</div>
+            </div>
+            <div>
+              <div class="result-label">Comparisons Made</div>
+              <div class="result-value" id="kmp-comps">-</div>
+            </div>
+            <div>
+              <div class="result-label">Execution Time</div>
+              <div class="result-value" id="kmp-time">-</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="result-label">LPS Array</div>
+            <div class="array-display" id="kmp-lps"></div>
+          </div>
+
+          <div class="mb-3">
+            <div class="result-label">Match Positions (0-indexed)</div>
+            <div class="array-display" id="kmp-positions"></div>
+          </div>
+
+          <div>
+            <div class="result-label">Text with Highlighted Matches</div>
+            <div id="kmp-highlighted" style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;font-size:14px;line-height:1.8;word-break:break-all;margin-top:6px;color:var(--text-secondary);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Z-Function Tab -->
+      <div id="tab-z" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-search"></i> Z-Function Algorithm</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Z[i] = longest substring starting at position i that is also a prefix of the string. O(n+m) time.
+            Used to identify repeated patterns in city reports.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Text</label>
+              <textarea id="z-text" class="form-control-smart" rows="3" placeholder="Text to search...">emergency response team deployed to flood zone emergency area</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Pattern</label>
+              <input type="text" id="z-pattern" class="form-control-smart" value="emergency" placeholder="Pattern"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runZ()"><i class="bi bi-play-fill"></i> Run Z-Function</button>
+          </div>
+        </div>
+        <div id="z-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Matches Found</div><div class="result-value" id="z-count">-</div></div>
+            <div><div class="result-label">Execution Time</div><div class="result-value" id="z-time">-</div></div>
+          </div>
+          <div class="mb-3">
+            <div class="result-label">Z-Array (text portion, first 30)</div>
+            <div class="array-display" id="z-array"></div>
+          </div>
+          <div><div class="result-label">Match Positions</div><div class="array-display" id="z-positions"></div></div>
+        </div>
+      </div>
+
+      <!-- Rabin-Karp Tab -->
+      <div id="tab-rk" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-search"></i> Rabin-Karp Rolling Hash</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Uses polynomial rolling hash to match patterns. Average O(n+m). Shows hash values and spurious hits.
+            Used to search service and infrastructure identifiers.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Text</label>
+              <textarea id="rk-text" class="form-control-smart" rows="3">road maintenance work on road section zone road</textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Pattern</label>
+              <input type="text" id="rk-pattern" class="form-control-smart" value="road"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runRK()"><i class="bi bi-play-fill"></i> Run Rabin-Karp</button>
+          </div>
+        </div>
+        <div id="rk-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Matches Found</div><div class="result-value" id="rk-count">-</div></div>
+            <div><div class="result-label">Pattern Hash</div><div class="result-value" id="rk-hash" style="font-size:16px;">-</div></div>
+            <div><div class="result-label">Spurious Hits</div><div class="result-value" id="rk-spurious">-</div></div>
+          </div>
+          <div><div class="result-label">Match Positions</div><div class="array-display" id="rk-positions"></div></div>
+        </div>
+      </div>
+
+      <!-- Aho-Corasick Tab -->
+      <div id="tab-ac" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-search"></i> Aho-Corasick Multi-Pattern</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Builds a finite automaton to search multiple keywords simultaneously in O(n + total_pattern_length + matches).
+            Used to detect multiple emergency and service keywords.
+          </p>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-smart">Text</label>
+              <textarea id="ac-text" class="form-control-smart" rows="3">The emergency flood situation requires immediate water supply and ambulance deployment in zone emergency area</textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label-smart">Keywords (comma-separated)</label>
+              <input type="text" id="ac-keywords" class="form-control-smart" value="emergency, flood, water, ambulance, zone"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runAC()"><i class="bi bi-play-fill"></i> Run Aho-Corasick</button>
+          </div>
+        </div>
+        <div id="ac-result" class="algo-result">
+          <div class="mb-3"><div class="result-label">Trie Nodes Built</div><div class="result-value" id="ac-nodes">-</div></div>
+          <div id="ac-occurrences"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showTab(tab) {
+  ['kmp','z','rk','ac'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = 'none';
+  });
+  document.getElementById('tab-'+tab).style.display = 'block';
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.remove('active');
+    if(['kmp','z','rk','ac'][i] === tab) el.classList.add('active');
+  });
+}
+
+function highlight(text, positions, patLen) {
+  if (!positions.length) return text;
+  let result = '';
+  let prev = 0;
+  const sorted = [...positions].sort((a,b) => a-b);
+  for (const pos of sorted) {
+    if (pos < prev) continue;
+    result += text.substring(prev, pos);
+    result += '<span class="match-highlight">' + text.substring(pos, pos+patLen) + '</span>';
+    prev = pos + patLen;
+  }
+  result += text.substring(prev);
+  return result;
+}
+
+function renderArray(containerId, arr, highlightIndices = []) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = arr.slice(0,40).map((v,i) => {
+    const cls = highlightIndices.includes(i) ? 'array-cell highlight' : 'array-cell';
+    return `<span class="${cls}" title="index ${i}">${v}</span>`;
+  }).join('');
+}
+
+async function runKMP() {
+  const text = document.getElementById('kmp-text').value;
+  const pattern = document.getElementById('kmp-pattern').value;
+  if (!text || !pattern) return alert('Please enter text and pattern');
+  document.getElementById('kmp-spin').classList.remove('d-none');
+  try {
+    const res = await fetch('/api/algorithms/kmp', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text, pattern})
+    });
+    const data = await res.json();
+    document.getElementById('kmp-count').textContent = data.matchCount;
+    document.getElementById('kmp-comps').textContent = data.comparisons;
+    document.getElementById('kmp-time').textContent = data.executionTimeMs + 'ms';
+    renderArray('kmp-lps', data.lpsArray);
+    renderArray('kmp-positions', data.matchPositions);
+    document.getElementById('kmp-highlighted').innerHTML = highlight(text, data.matchPositions, pattern.length);
+    document.getElementById('kmp-result').classList.add('show');
+  } catch(e) { alert('Error: '+e.message); }
+  document.getElementById('kmp-spin').classList.add('d-none');
+}
+
+async function runZ() {
+  const text = document.getElementById('z-text').value;
+  const pattern = document.getElementById('z-pattern').value;
+  const res = await fetch('/api/algorithms/z', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, pattern})
+  });
+  const data = await res.json();
+  document.getElementById('z-count').textContent = data.matchCount;
+  document.getElementById('z-time').textContent = data.executionTimeMs + 'ms';
+  renderArray('z-array', data.zArray);
+  renderArray('z-positions', data.matchPositions);
+  document.getElementById('z-result').classList.add('show');
+}
+
+async function runRK() {
+  const text = document.getElementById('rk-text').value;
+  const pattern = document.getElementById('rk-pattern').value;
+  const res = await fetch('/api/algorithms/rabin-karp', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, pattern})
+  });
+  const data = await res.json();
+  document.getElementById('rk-count').textContent = data.matchPositions.length;
+  document.getElementById('rk-hash').textContent = data.patternHash;
+  document.getElementById('rk-spurious').textContent = data.spuriousHits;
+  renderArray('rk-positions', data.matchPositions);
+  document.getElementById('rk-result').classList.add('show');
+}
+
+async function runAC() {
+  const text = document.getElementById('ac-text').value;
+  const keywords = document.getElementById('ac-keywords').value.split(',').map(k=>k.trim()).filter(Boolean);
+  const res = await fetch('/api/algorithms/aho-corasick', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, keywords})
+  });
+  const data = await res.json();
+  document.getElementById('ac-nodes').textContent = data.trieNodeCount;
+  let html = '';
+  for (const [word, positions] of Object.entries(data.occurrences)) {
+    html += `<div style="margin-bottom:10px;">
+      <div class="result-label">"${word}" found at positions:</div>
+      <div class="array-display">${positions.map(p=>`<span class="array-cell highlight">${p}</span>`).join('')}</div>
+    </div>`;
+  }
+  if (!html) html = '<div style="color:var(--text-muted);">No matches found</div>';
+  document.getElementById('ac-occurrences').innerHTML = html;
+  document.getElementById('ac-result').classList.add('show');
+}
+</script>
+</body>
+</html>

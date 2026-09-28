@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Randomized Algorithms | SmartCityX', 'M6 Randomized')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('randomized')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M6 – Randomized Algorithms', 'QuickSort · Reservoir Sampling · Miller-Rabin')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showRTab('qs')">Randomized QuickSort</button>
+        <button class="module-tab" onclick="showRTab('rs')">Reservoir Sampling</button>
+        <button class="module-tab" onclick="showRTab('mr')">Miller-Rabin</button>
+      </div>
+
+      <!-- QuickSort -->
+      <div id="tab-qs">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-sort-numeric-up"></i> Randomized QuickSort</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Sorts an array by selecting a random pivot, ensuring expected O(n log n) regardless of input order.
+            Used to sort service priority queues and sensor readings.
+          </p>
+          <div class="col-md-8">
+            <label class="form-label-smart">Array (comma-separated integers, max 30)</label>
+            <input type="text" id="qs-arr" class="form-control-smart" value="64, 34, 25, 12, 22, 11, 90, 45, 67, 3, 78, 55"/>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runQS()"><i class="bi bi-play-fill"></i> Sort with Random Pivot</button>
+          </div>
+        </div>
+        <div id="qs-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div><div class="result-label">Comparisons</div><div class="result-value" id="qs-comps">-</div></div>
+            <div><div class="result-label">Time</div><div class="result-value" id="qs-time">-</div></div>
+          </div>
+          <div class="result-label mb-2">Original Array</div>
+          <div class="array-display" id="qs-original"></div>
+          <div class="result-label mt-3 mb-2">Sorted Array</div>
+          <div class="array-display" id="qs-sorted"></div>
+        </div>
+      </div>
+
+      <!-- Reservoir Sampling -->
+      <div id="tab-rs" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-collection"></i> Reservoir Sampling</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Randomly sample k items from a stream of unknown length with uniform probability.
+            O(n) time. Used to sample sensor readings and service requests for analytics.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-smart">Stream (comma-separated integers)</label>
+              <input type="text" id="rs-stream" class="form-control-smart" value="5, 12, 3, 8, 90, 24, 67, 43, 2, 88, 31, 55, 9, 76, 44, 20, 33, 71, 6, 19"/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-smart">Sample Size (k)</label>
+              <input type="number" id="rs-k" class="form-control-smart" value="5" min="1"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runRS()"><i class="bi bi-play-fill"></i> Sample Stream</button>
+          </div>
+        </div>
+        <div id="rs-result" class="algo-result">
+          <div class="result-label mb-2">Stream</div>
+          <div class="array-display" id="rs-stream-display"></div>
+          <div class="result-label mt-3 mb-2">Reservoir Sample (k items, uniformly distributed)</div>
+          <div class="array-display" id="rs-sample"></div>
+        </div>
+      </div>
+
+      <!-- Miller-Rabin -->
+      <div id="tab-mr" style="display:none;">
+        <div class="card-glass mb-4">
+          <div class="section-title mb-3"><i class="bi bi-key"></i> Miller-Rabin Primality Test</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            A probabilistic primality test. With k rounds, error probability ≤ (1/4)^k.
+            Used to generate cryptographic keys for city data security.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label-smart">Number to Test (n)</label>
+              <input type="number" id="mr-n" class="form-control-smart" value="982451653"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-smart">Rounds (k) – more = more accurate</label>
+              <input type="number" id="mr-k" class="form-control-smart" value="15" min="1" max="50"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runMR()"><i class="bi bi-play-fill"></i> Test Primality</button>
+          </div>
+          <div style="margin-top:16px;">
+            <p style="font-size:12px;color:var(--text-muted);">Quick tests:</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+              <button class="module-tab" onclick="document.getElementById('mr-n').value='2'; runMR()">2 (prime)</button>
+              <button class="module-tab" onclick="document.getElementById('mr-n').value='561'; runMR()">561 (Carmichael)</button>
+              <button class="module-tab" onclick="document.getElementById('mr-n').value='982451653'; runMR()">982451653 (prime)</button>
+              <button class="module-tab" onclick="document.getElementById('mr-n').value='1000000007'; runMR()">10^9+7 (prime)</button>
+            </div>
+          </div>
+        </div>
+        <div id="mr-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div>
+              <div class="result-label">Result</div>
+              <div class="result-value" id="mr-verdict" style="font-size:24px;">-</div>
+            </div>
+            <div>
+              <div class="result-label">Rounds Used</div>
+              <div class="result-value" id="mr-rounds">-</div>
+            </div>
+            <div>
+              <div class="result-label">Error Bound</div>
+              <div style="font-size:16px;font-weight:600;color:var(--accent-orange);" id="mr-error">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+function showRTab(tab) {
+  ['qs','rs','mr'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.toggle('active', (['qs','rs','mr'][i]) === tab);
+  });
+}
+
+let lastQSArr = [];
+
+async function runQS() {
+  const arrStr = document.getElementById('qs-arr').value;
+  const array = arrStr.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n)).slice(0,30);
+  lastQSArr = [...array];
+  const res = await fetch('/api/algorithms/quicksort', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({array})
+  });
+  const data = await res.json();
+  document.getElementById('qs-comps').textContent = data.comparisons;
+  document.getElementById('qs-time').textContent = data.executionTimeMs + 'ms';
+  document.getElementById('qs-original').innerHTML = lastQSArr.map(n=>`<span class="array-cell">${n}</span>`).join('');
+  document.getElementById('qs-sorted').innerHTML = data.sorted.map(n=>`<span class="array-cell highlight">${n}</span>`).join('');
+  document.getElementById('qs-result').classList.add('show');
+}
+
+async function runRS() {
+  const streamStr = document.getElementById('rs-stream').value;
+  const stream = streamStr.split(',').map(n=>parseInt(n.trim())).filter(n=>!isNaN(n));
+  const k = parseInt(document.getElementById('rs-k').value);
+  const res = await fetch('/api/algorithms/reservoir-sampling', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({stream, k})
+  });
+  const data = await res.json();
+  document.getElementById('rs-stream-display').innerHTML = stream.map(n=>`<span class="array-cell">${n}</span>`).join('');
+  document.getElementById('rs-sample').innerHTML = data.sample.map(n=>`<span class="array-cell highlight">${n}</span>`).join('');
+  document.getElementById('rs-result').classList.add('show');
+}
+
+async function runMR() {
+  const n = parseInt(document.getElementById('mr-n').value);
+  const rounds = parseInt(document.getElementById('mr-k').value);
+  const res = await fetch('/api/algorithms/miller-rabin', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({n, rounds})
+  });
+  const data = await res.json();
+  document.getElementById('mr-verdict').textContent = data.isPrime ? '✅ PRIME' : '❌ COMPOSITE';
+  document.getElementById('mr-verdict').style.color = data.isPrime ? 'var(--accent-green)' : 'var(--accent-red)';
+  document.getElementById('mr-rounds').textContent = data.rounds;
+  const errorBound = Math.pow(0.25, data.rounds).toExponential(2);
+  document.getElementById('mr-error').textContent = '≤ ' + errorBound;
+  document.getElementById('mr-result').classList.add('show');
+}
+</script>
+</body>
+</html>

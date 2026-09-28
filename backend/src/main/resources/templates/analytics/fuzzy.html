@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Fuzzy Search | SmartCityX', 'M3 Edit Distance')}"></head>
+<body>
+<div class="app-wrapper">
+  <div th:replace="~{layout/base :: sidebar('fuzzy')}"></div>
+  <main class="main-content">
+    <div th:replace="~{layout/base :: header('M3 – Fuzzy Search & Edit Distance', 'Levenshtein · Damerau-Levenshtein · Typo Correction')}"></div>
+    <div class="page-content">
+
+      <div class="module-tabs mb-4">
+        <button class="module-tab active" onclick="showFuzzyTab('lev')">Levenshtein</button>
+        <button class="module-tab" onclick="showFuzzyTab('dam')">Damerau-Levenshtein</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-glass">
+          <div class="section-title mb-3"><i class="bi bi-spellcheck"></i>
+            <span id="algo-name-label">Levenshtein Distance</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            Computes the minimum number of single-character edits (insert, delete, substitute)
+            required to transform string A into string B.
+            Used to correct citizen query typos.
+          </p>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label-smart">String A</label>
+              <input type="text" id="lev-a" class="form-control-smart" value="kitten" placeholder="Source string"/>
+            </div>
+            <div class="col-6">
+              <label class="form-label-smart">String B</label>
+              <input type="text" id="lev-b" class="form-control-smart" value="sitting" placeholder="Target string"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn-primary-smart" onclick="runFuzzy()"><i class="bi bi-play-fill"></i> Compute Distance</button>
+          </div>
+        </div>
+
+        <div id="fuzzy-result" class="algo-result">
+          <div class="grid-3 mb-4">
+            <div>
+              <div class="result-label">Edit Distance</div>
+              <div class="result-value" id="edit-dist">-</div>
+            </div>
+            <div>
+              <div class="result-label">Suggestion</div>
+              <div style="font-size:16px;font-weight:700;color:var(--accent-green);" id="edit-suggestion">-</div>
+            </div>
+            <div>
+              <div class="result-label">Time</div>
+              <div class="result-value" id="edit-time">-</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="result-label mb-2">DP Matrix (rows = string A, cols = string B)</div>
+            <div class="dp-matrix" id="edit-matrix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Theory Card -->
+      <div class="card-glass mt-4">
+        <div class="section-title mb-3"><i class="bi bi-book"></i> How Edit Distance Works</div>
+        <div class="grid-2">
+          <div>
+            <div style="color:var(--accent-cyan);font-weight:600;margin-bottom:8px;">Levenshtein Distance</div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+              dp[i][j] = min of:<br>
+              • dp[i-1][j] + 1 (deletion)<br>
+              • dp[i][j-1] + 1 (insertion)<br>
+              • dp[i-1][j-1] + cost (substitution, cost=0 if equal)<br><br>
+              Time: O(mn) | Space: O(mn)
+            </p>
+          </div>
+          <div>
+            <div style="color:var(--accent-orange);font-weight:600;margin-bottom:8px;">Damerau-Levenshtein Distance</div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+              Extends Levenshtein by also allowing:<br>
+              • Transposition of adjacent characters (ab → ba)<br><br>
+              This handles common typographical errors more accurately.
+              Used in natural language processing and spell correction systems.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/base :: scripts}"></div>
+<script>
+let currentFuzzyAlgo = 'levenshtein';
+
+function showFuzzyTab(tab) {
+  document.querySelectorAll('.module-tab').forEach((el,i) => {
+    el.classList.remove('active');
+    if(i===0 && tab==='lev') el.classList.add('active');
+    if(i===1 && tab==='dam') el.classList.add('active');
+  });
+  currentFuzzyAlgo = tab === 'lev' ? 'levenshtein' : 'damerau-levenshtein';
+  document.getElementById('algo-name-label').textContent =
+    tab === 'lev' ? 'Levenshtein Distance' : 'Damerau-Levenshtein Distance';
+  document.getElementById('fuzzy-result').classList.remove('show');
+}
+
+async function runFuzzy() {
+  const textA = document.getElementById('lev-a').value;
+  const textB = document.getElementById('lev-b').value;
+  if (!textA || !textB) return alert('Please enter both strings');
+
+  const res = await fetch('/api/algorithms/'+currentFuzzyAlgo, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({textA, textB})
+  });
+  const data = await res.json();
+
+  document.getElementById('edit-dist').textContent = data.distance;
+  document.getElementById('edit-suggestion').textContent = data.suggestion;
+  document.getElementById('edit-time').textContent = data.executionTimeMs + 'ms';
+
+  // Render DP matrix
+  const matrix = data.dpMatrix;
+  if (matrix && matrix.length) {
+    let html = '<table><thead><tr><th></th><th>ε</th>';
+    for (const c of textB) html += `<th>${c}</th>`;
+    html += '</tr></thead><tbody>';
+    for (let i = 0; i < matrix.length; i++) {
+      const rowChar = i === 0 ? 'ε' : textA[i-1];
+      html += `<tr><th>${rowChar}</th>`;
+      for (let j = 0; j < matrix[i].length; j++) {
+        const cls = (i === matrix.length-1 && j === matrix[i].length-1) ? 'highlighted' : '';
+        html += `<td class="${cls}">${matrix[i][j]}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('edit-matrix').innerHTML = html;
+  }
+
+  document.getElementById('fuzzy-result').classList.add('show');
+}
+</script>
+</body>
+</html>
