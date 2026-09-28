@@ -7,7 +7,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
-export function MainLayout() {
+export function MainLayout({ user }: { user?: any }) {
   const location = useLocation();
   const [currentTime, setCurrentTime] = useState('');
 
@@ -26,7 +26,7 @@ export function MainLayout() {
   }, []);
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Map, label: 'City Overview', path: '/overview' },
     { icon: Car, label: 'Traffic', path: '/traffic' },
     { icon: Droplet, label: 'Water & Energy', path: '/resources' },
@@ -39,9 +39,19 @@ export function MainLayout() {
     { icon: PieChart, label: 'Analytics', path: '/analytics' },
     { icon: ClipboardList, label: 'Reports', path: '/reports' },
     { icon: Database, label: 'Data Management', path: '/data' },
-    { icon: Users, label: 'Users', path: '/users' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
+
+  if (user?.roles?.some((r: any) => r.name === 'SUPER_ADMIN' || r.name === 'ADMIN')) {
+    menuItems.push(
+      { icon: Users, label: 'Users', path: '/users' },
+      { icon: Settings, label: 'Settings', path: '/settings' }
+    );
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('smartcityx_user');
+    window.location.href = '/';
+  };
 
   return (
     <div className="flex h-screen bg-[#070b14] text-slate-300 font-sans overflow-hidden">
@@ -103,15 +113,15 @@ export function MainLayout() {
         {/* User Profile */}
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center border-2 border-slate-700 overflow-hidden">
-               <img src="https://i.pravatar.cc/150?u=satyam" alt="User" className="w-full h-full object-cover" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center border-2 border-slate-700 overflow-hidden text-white font-bold text-lg">
+               {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">Satyam Kumar Kapri</p>
-              <p className="text-xs text-slate-500 truncate">Admin</p>
+              <p className="text-sm font-medium text-white truncate">{user?.fullName || user?.username || 'User'}</p>
+              <p className="text-xs text-slate-500 truncate">{user?.roles?.[0]?.name || 'CITIZEN'}</p>
             </div>
           </div>
-          <button className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm w-full">
+          <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm w-full">
             <LogOut className="w-4 h-4" /> Logout
           </button>
         </div>
@@ -154,8 +164,8 @@ export function MainLayout() {
             <div className="h-6 w-px bg-slate-700 mx-1"></div>
             
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden border border-slate-600">
-                 <img src="https://i.pravatar.cc/150?u=satyam" alt="User" className="w-full h-full object-cover" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden border border-slate-600 text-white font-bold text-sm">
+                 {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
               </div>
               <div className="text-right hidden md:block">
                 <p className="text-[11px] text-slate-400 leading-tight">{currentTime.split(' ').slice(0, 4).join(' ')}</p>
